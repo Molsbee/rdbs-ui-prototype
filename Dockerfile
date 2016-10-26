@@ -1,9 +1,12 @@
 FROM golang
 
-ADD
+ENV PORT=9000
 
-RUN
+ADD . /go/src/github.com/molsbee/rdbs-ui-prototype
 
-ENTRYPOINT
+RUN go get github.com/tools/godep
+RUN cd /go/src/github.com/molsbee/rds-ui-prototype/ && godep restore && godep go install
 
-EXPOSE
+ENTRYPOINT /go/bin/ds-canary-appfog
+
+EXPOSE 9000
