@@ -1,13 +1,6 @@
-export class Server {
-
-    alias: string;
-    location: string;
-    cpu: number;
-    memory: number;
-    storage: number;
-    attributes: Array<[string, string]>;
-
-    constructor(data: any) {
+"use strict";
+var Server = (function () {
+    function Server(data) {
         this.alias = data.alias;
         this.location = data.location;
         this.cpu = data.cpu;
@@ -15,4 +8,7 @@ export class Server {
         this.storage = data.storage;
         this.attributes = data.attributes;
     }
-}
+    return Server;
+}());
+exports.Server = Server;
+//# sourceMappingURL=server.js.map
