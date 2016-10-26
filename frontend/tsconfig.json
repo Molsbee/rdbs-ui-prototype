@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
-    "outDir": "./js/",
-    "sourceMap": true,
+    "target": "es5",
+    "module": "commonjs",
     "noImplicitAny": true,
-    "module": "amd",
-    "target": "es5"
+    "sourceMap": true,
+    "outDir": "./js/"
   }
 }

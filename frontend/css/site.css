@@ -1,0 +1,74 @@
+html.cyclops body#relational-db #createDatabaseForm .card {
+    -webkit-transition: border 300ms linear;
+    -moz-transition: border 300ms linear;
+    transition: border 300ms linear;
+    text-align: center;
+}
+html.cyclops body#relational-db #createDatabaseForm .card:hover {
+    border-color: #888;
+}
+html.cyclops body#relational-db #createDatabaseForm .card .card-title {
+    margin-bottom: 10px;
+}
+html.cyclops body#relational-db #createDatabaseForm .card .card-text {
+    font-size: 12px;
+}
+@media (min-width: 768px) {
+    html.cyclops body#relational-db #createDatabaseForm .card-deck .card {
+        width: 20%;
+    }
+}
+html.cyclops body#relational-db .action-restore {
+    display: none;
+    font-size: 12px;
+    float: right;
+}
+html.cyclops body#relational-db .deleted-db {
+    background-color: #f9f9f9;
+}
+html.cyclops body#relational-db .deleted-db:hover {
+    background-color: #ebebeb;
+}
+html.cyclops body#relational-db .cost-change {
+    font-weight: 400;
+}
+html.cyclops body#relational-db #dbBackups .list-view-link-item:hover .action-restore {
+    display: inline;
+}
+html.cyclops body#relational-db .card-link a {
+    text-decoration: none;
+}
+html.cyclops body#relational-db .m-t-lg {
+    margin-top: 40px;
+}
+html.cyclops body#relational-db .m-b-lg {
+    margin-bottom: 40px;
+}
+html.cyclops body#relational-db .resources .h2 {
+    font-weight: 400;
+}
+html.cyclops body#relational-db .btn-close {
+    margin-top: 0;
+}
+html.cyclops body#relational-db .log-panel {
+    height: 300px;
+    width: 100%;
+    overflow-y: auto;
+    border: solid 1px #d9d9d9;
+    border-radius: 4px;
+}
+@media (min-width: 768px) {
+    html.cyclops body#relational-db .date-time-picker .form-control + .form-control {
+        margin-top: 0;
+    }
+}
+
+/* RDBS added styles */
+html.cyclops body#relational-db .action-delete-backup {
+    display: none;
+    /*font-size: 12px;*/
+    float: right;
+}
+html.cyclops body#relational-db .list-view-editable-item:hover .action-delete-backup {
+    display: inline;
+}
