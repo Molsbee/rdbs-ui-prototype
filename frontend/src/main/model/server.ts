@@ -5,7 +5,7 @@ export class Server {
     cpu: number;
     memory: number;
     storage: number;
-    attributes: Array<[string, string]>;
+    attributes: Array<{key: string, value: string}>;
 
     constructor(data: any) {
         this.alias = data.alias;

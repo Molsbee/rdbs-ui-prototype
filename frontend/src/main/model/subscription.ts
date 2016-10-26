@@ -13,31 +13,47 @@ export class Subscription {
     host: string;
     port: string;
     servers: Array<server.Server>;
-    // cpu: number;
-    // memory: number;
-    // storage: number;
-    // activeServerRole: string;
+    cpu: number;
+    memory: number;
+    storage: number;
+    activeServerRole: string;
     backups: Array<backup.Backup>;
     backupIsEmpty: boolean;
-    // restartRequired: boolean;
+    restartRequired: boolean;
 
-    constructor(id: number, accountAlias: string, externalId: string,
-                instanceType: string, engine: string, location: string,
-                host: string, port: string, servers: Array<server.Server>,
-                backups: Array<backup.Backup>) {
-        this.id = id;
-        this.accountAlias = accountAlias;
-        this.externalId = externalId;
-        this.instanceType = instanceType;
-        this.isReplicated = (instanceType.indexOf("REPLICATION") !== -1) ? true : false;
-        this.engine = engine;
-        this.location = location;
-        this.host = host;
-        this.port = port;
-        this.servers = servers;
+    constructor(data: any) {
+        this.id = data.id;
+        this.accountAlias = data.accountAlias;
+        this.externalId = data.externalId;
+        this.instanceType = data.instanceType;
+        this.isReplicated = (this.instanceType.indexOf("REPLICATION") !== -1) ? true : false;
+        this.engine = data.engine;
+        this.location = data.location;
+        this.host = data.host;
+        this.port = data.port;
+        this.servers = data.servers;
 
-        this.backups = backups;
-        this.backupIsEmpty = (backups.length == 0) ? true : false;
+        let server = this.servers[0];
+        this.cpu = server.cpu;
+        this.memory = server.memory;
+        this.storage = server.storage;
+
+        this.servers.forEach(s => {
+            if (s.attributes.hasOwnProperty('ACTIVE_CONNECTION')) {
+                s.attributes.forEach(a => {
+                    if (a.key == "REPLICATION_ROLE") this.activeServerRole = a.value;
+                });
+            }
+        })
+
+        this.backups = data.backups;
+        this.backupIsEmpty = (this.backups.length == 0) ? true : false;
+        this.restartRequired = data.restartRequired;
+    }
+
+    // TODO: Complete
+    update() {
+
     }
 
 }
