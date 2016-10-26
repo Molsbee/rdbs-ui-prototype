@@ -8,8 +8,14 @@ export class Backup {
     status: string;
     size: string;
 
-    constructor() {
+    constructor(data: any) {
+        this.id = data.id;
+        this.fileName = data.fileName;
+        this.backupType = data.backupType;
+        this.backupTime = data.backupTime;
 
+        this.status = data.status;
+        this.size = data.size;
     }
 
 }

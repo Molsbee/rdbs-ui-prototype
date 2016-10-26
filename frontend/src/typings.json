@@ -1,5 +1,8 @@
 {
   "dependencies": {
     "knockout": "registry:npm/knockout#3.4.0+20160516171930"
+  },
+  "globalDependencies": {
+    "moment": "registry:dt/moment#2.11.1+20161010105546"
   }
 }
