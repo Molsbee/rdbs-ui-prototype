@@ -10,6 +10,9 @@ func main() {
 	router := mux.NewRouter()
 	router.StrictSlash(true)
 
+	externalJavascript := http.FileServer(http.Dir("./frontend/external"))
+	router.PathPrefix("/external/").Handler(http.StripPrefix("/external/", externalJavascript))
+
 	javascript := http.FileServer(http.Dir("./frontend/js"))
 	router.PathPrefix("/js/").Handler(http.StripPrefix("/js/", javascript))
 

@@ -4,6 +4,8 @@
     "module": "commonjs",
     "noImplicitAny": true,
     "sourceMap": true,
-    "outDir": "./js/"
+    "outDir": "../js/",
+    "rootDir": "../src",
+    "typeRoots": ["./typings"]
   }
 }
