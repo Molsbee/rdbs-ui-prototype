@@ -44,7 +44,7 @@ export class Subscription {
                     if (a.key == "REPLICATION_ROLE") this.activeServerRole = a.value;
                 });
             }
-        })
+        });
 
         this.backups = data.backups;
         this.backupIsEmpty = (this.backups.length == 0) ? true : false;

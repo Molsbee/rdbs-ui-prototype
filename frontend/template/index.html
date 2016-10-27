@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en" class="cyclops">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-COMPATIBLE" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Relational DB</title>
+
+    <link href="https://assets.ctl.io/cyclops/1.6.1/css/cyclops.min.css" rel="stylesheet" type="text/css">
+    <link href="https://assets.ctl.io/atlas/2.0.0-beta.4/css/atlas.min.css" rel="stylesheet" type="text/css">
+    <link href="/css/site.css" rel="stylesheet" type="text/css">
+
+    <!--[if lt IE 9]>
+    <script src="/external/html5shiv-3.7.2.min.js"></script>
+    <script src="/external/respond-1.4.2.min.js"></script>
+    <![endif]-->
+</head>
+<body>
+    <account-switcher></account-switcher>
+    <brand-bar></brand-bar>
+    <main-nav></main-nav>
+    <main>
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="content-header">
+                        <h1>Database Instances</h1>
+                        <p class="lead">
+                            Set up and manage high performance, cost efficient, relational databases.
+                        </p>
+                    </div>
+                    <div class="row billing-summary" id="billingRoot">
+                        <div class="col-sm-4 col-xs-6">
+                            <div class="heading">MONTH ESTIMATE</div>
+                            <div class="currency" data-bind="text: monthlyEstimate">...</div>
+                        </div>
+                        <div class="col-sm-4 col-xs-6">
+                            <div class="heading">CURRENT HOUR</div>
+                            <div class="currency" data-bind="text: currentHour">...</div>
+                        </div>
+                        <div class="col-sm-4 col-xs-6">
+                            <div class="heading">MONTH TO DATE</div>
+                            <div class="currency" data-bind="text: monthToDate">...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="primary" id="tabs">
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <nav class="navbar navbar-local m-b-sm">
+                            <div class="navbar-header">
+                                <button type="button" class="navbar-toggle collapsed open" aria-expanded="true">
+                                    Menu
+                                    <svg class="cyclops-icon"><use xlink:href="#icon-caret-down"></use></svg>
+                                </button>
+                            </div>
+                            <div class="navbar-collapse collapse" aria-expanded="true">
+                                <ul class="nav navbar-nav">
+                                    <li data-bind="attr: { class: subscriptionTab() ? 'active' : '' }">
+                                        <a href="#database" data-bind="click: function(data, event) { activateTab('database') }">Databases</a>
+                                    </li>
+                                    <li data-bind="attr: { class: configurationTab() ? 'active' : '' }">
+                                        <a href="#configuration" data-bind="click: function(data, event) { activateTab('configuration') }">Configuration Profiles</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </nav>
+
+                        <!-- Responsible for displaying subscription list tab and data -->
+                        <div id="subscriptionTab" data-bind="visible: subscriptionTab">
+                            <div class="new-list-view-toolbar">
+                                <a href='<c:url value="/subscription-create"/>' class="btn btn-primary m-r-xs">
+                                    <svg class="cyclops-icon"><use xlink:href="#icon-plus-circle"></use></svg>
+                                    database
+                                </a>
+                                <span class="deemphasize">Create and manage relational databases</span>
+                                <span class="search-input pull-right">
+                                    <input type="text" data-bind="value: subscriptions.query, valueUpdate: 'afterkeydown'">
+                                    <svg class="cyclops-icon">
+                                        <!-- ko ifnot: subscriptions.query -->
+                                        <use xlink:href="#icon-search"></use>
+                                        <!-- /ko -->
+                                        <!-- ko if: subscriptions.query -->
+                                        <use class="clear" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#icon-times" data-bind="click: clearFilter"></use>
+                                        <!-- /ko -->
+                                    </svg>
+                                </span>
+                            </div>
+                            <div class="new-list-view-responsive new-list-vew-responsive-sm">
+                                <div class="new-list-view-header">
+                                    <h3 class="col col-15">status</h3>
+                                    <h3 class="col col-35">instance</h3>
+                                    <h3 class="col col-20">location</h3>
+                                    <h3 class="col col-15">engine</h3>
+                                    <h3 class="col col-15 text-right">backups</h3>
+                                </div>
+                                <ul class="new-list-view" data-bind="templateSwitcher: {
+                                                           value: subscriptions,
+                                                           loading: subscriptionsIsLoading,
+                                                           templates: {
+                                                               display: 'listViewSubscriptionsPopulatedTemplate',
+                                                               loading: 'listViewSubscriptionsLoadingTemplate',
+                                                               empty: 'listViewSubscriptionsEmptyTemplate'}}">
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Responsible for displaying configuration list tab and data -->
+                        <div id="configurationTab" data-bind="visible: configurationTab" style="display:none">
+                            <div class="new-list-view-toolbar">
+                                <a href='<c:url value="/configProfile-create"/>' class="btn btn-primary m-r-xs">
+                                    <svg class="cyclops-icon"><use xlink:href="#icon-plus-circle"></use></svg>
+                                    configuration profile
+                                </a>
+                                <span class="deemphasize">Manage the configuration parameters of multiple databases from a single configuration profile</span>
+                            </div>
+                            <div class="new-list-view-responsive new-list-view-responsive-sm">
+                                <div class="new-list-view-header">
+                                    <h3 class="col col-40">policy name</h3>
+                                    <h3 class="col col-30">last edited by</h3>
+                                    <h3 class="col col-30">last edited</h3>
+                                </div>
+                                <ul class="new-list-view" data-bind="templateSwitcher: {
+                                                                        value: configurations,
+                                                                        loading: configurationsIsLoading,
+                                                                        templates: {
+                                                                            display: 'listViewConfigurationsPopulatedTemplate',
+                                                                            loading: 'listViewConfigurationsLoadingTemplate'}}">
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container" id="activityHistoryRoot">
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="activity-history"
+                         data-bind="template: { name: 'recentActivityTemplate', data: sortedActionsGroupedByDate }"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script src="../external/require.js"></script>
+    <script src="../js/require-config.js"></script>
+    <script>
+        require(["jquery", "jqueryUI", "knockout", "knockout-validation", "auth0"],
+                function(jquery, jqueryUI, ko, kovalidation, auth0) {
+                    window.ko = ko;
+                    window.Auth0 = auth0;
+                    require(["cyclops", "atlas"], function(cyclops, atlas) {
+                        window.atlas = atlas;
+                        require(["../js/model/subscription", "../js/model/backup", "../js/model/server", "../js/views/index"],
+                                function(subscription, backup, server, index) {
+                                    var promise = atlas.liftoff({
+                                        env: "prod",
+                                        mainNavId: "Main.Services.RelationalDatabaseService"
+                                    });
+
+                                    promise.done(function(contexts) {
+                                        var accountContext = contexts.accountContext;
+                                        var viewModel = new index.ViewModel("{{.RdbsApi}}", accountContext);
+                                        ko.applyBindings(viewModel, document.getElementById("tabs"));
+
+                                        accountContext.subscribe(function(context) {
+                                            console.log(context.accountAlias);
+                                            viewModel.updatePage();
+                                        });
+                                    });
+                        });
+                    });
+            });
+    </script>
+
+    <!-- START: Subscription List Views -->
+    <script type="text/html" id="listViewSubscriptionsEmptyTemplate">
+        <li class="empty-list-view-item feature" data-bind="ifnot: promotionAvailable, visible: !promotionAvailable()">
+            <p/>
+            <img src='<c:url value="/img/relationaldb-logo-black-text.svg"/>' width="25%"/>
+
+            <h3>Get Started with Relational DB</h3>
+            <p class="lead">Relational DB makes it easy to set up and manage high performance, cost efficient, MySQL-compatible relational databases. </p>
+            <p><a href="<c:url value="/subscription-create"/>" class="btn btn-primary btn-lg">create a database</a></p>
+        </li>
+
+        <li class="empty-list-view-item feature" data-bind="if: promotionAvailable, visible: promotionAvailable">
+            <p/>
+            <img src='<c:url value="/img/relationaldb-logo-black-text.svg"/>' width="25%"/>
+            <h3 class="text-green">30 Day Free Trial</h3>
+            <p class="lead">Relational DB makes it easy to set up and manage high performance, cost efficient, MySQL-compatible relational databases.</p>
+            <p>Get a 30 day free trial of 1 vCPU, 1 GB Ram, and 1 GB Storage with or without replication.</p>
+            <p><a href="<c:url value="/subscription-create"/>?promotion=true" class="btn btn-primary btn-lg">start your 30 day free trial</a></p>
+        </li>
+    </script>
+    <script type="text/html" id="listViewSubscriptionsLoadingTemplate">
+        <li class="loading-list-view-items">Fetching Subscriptions from Server&hellip;</li>
+    </script>
+    <script type="text/html" id="listViewSubscriptionsPopulatedTemplate">
+        <!-- ko foreach: {data: subscriptions, afterAdd: addItemAnimation, beforeRemove: removeItemAnimation} -->
+        <li>
+            <a data-bind="attr: { href: '<c:url value="/"/>' + accountAlias() + '/subscription/' + id() }">
+            <div class='list-view-editable-item' data-bind="css: {'list-view-item-warning': restartRequired()}">
+                <div class='col col-15'>
+                    <span class='col-header'>status</span>
+                    <span data-bind="text: status"></span>
+                    <!-- ko if: isReplicated -->(replicated)<!-- /ko -->
+                    <br>
+                    <!-- ko if: restartRequired -->
+                    <svg class="cyclops-icon">
+                        <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#icon-exclamation-triangle"></use>
+                    </svg>
+                    pending restart
+                    <!-- /ko -->
+                </div>
+                <div class='col col-35'>
+                    <span class='col-header'>instance</span>
+                    <div data-bind="text: externalId"></div>
+                    <small>
+                        <span data-bind="text: host"></span>:<span data-bind="text: port"></span>
+                    </small>
+                </div>
+                <div class='col col-20' data-bind="text: location">
+                    <span class='col-header'>location</span>
+                </div>
+                <div class='col col-15'>
+                    <span class='col-header'>engine</span>
+                    <span class="tag tag-default" data-bind="text: engine"></span>
+                </div>
+                <div class='col col-15 text-right' data-bind="text: backups().length">
+                    <span class='col-header'>backups</span>
+                </div>
+            </div>
+            </a>
+        </li>
+        <!-- /ko -->
+    </script>
+    <!-- END: Subscription List Views -->
+
+    <!-- START: Configuration List Views -->
+    <script type="text/html" id="listViewConfigurationsLoadingTemplate">
+        <li class="loading-list-view-items">Fetching Configurations&hellip;</li>
+    </script>
+    <script type="text/html" id="listViewConfigurationsPopulatedTemplate">
+        <!-- ko foreach: {data: configurations, afterAdd: addItemAnimation, beforeRemove: removeItemAnimation} -->
+        <li>
+            <a data-bind="attr: { href: configProfileUrl }">
+                <div class="list-view-link-item">
+                    <div class="col col-40">
+                        <span class="col-header">policy name</span>
+                        <span data-bind="text: name"></span>
+                    </div>
+                    <div class="col col-30">
+                        <span class="col-header">last edited by</span>
+                        <span data-bind="text: lastEditedBy"></span>
+                    </div>
+                    <div class="col col-30">
+                        <span class="col-header">last edited</span>
+                        <span data-bind="text: lastEdited"></span>
+                    </div>
+                </div>
+            </a>
+        </li>
+        <!-- /ko -->
+    </script>
+    <!-- END: Configuration List Views -->
+
+    <!-- START: Action History List Views -->
+    <script type="text/html" id="recentActivityTemplate">
+        <h5 class="content-header">RECENT ACTIVITY</h5>
+        <!-- ko foreach: {data: $data } -->
+        <section class="day">
+            <h5 class="content-header" data-bind="text: date"/>
+            <ol data-bind="foreach: { data: actions }">
+                <li>
+                    <div class="timestamp" data-bind="text: timestamp.format('hh:mm:ss a')"/>
+                    <div class="details">
+                        <div class="subject" data-bind="text: subject"/>
+                        <div class="body" data-bind="text: body"/>
+                        <div class="attribution"><span class="createdBy" data-bind="text: attribution"/></div>
+                    </div>
+                </li>
+            </ol>
+        </section>
+        <!-- /ko -->
+    </script>
+    <!-- END: Action History List Views -->
+</body>
+</html>
