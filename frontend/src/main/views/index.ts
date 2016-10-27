@@ -1,8 +1,10 @@
+import * as $ from "jquery";
 import * as ko from "knockout";
 import {Observable} from "knockout";
 import {ObservableArray} from "knockout";
 import {Subscription} from "../model/subscription";
-import * as $ from "jquery";
+import {Billing} from "../model/billing";
+import {History} from "../model/history";
 
 declare var atlas: any;
 
@@ -10,6 +12,9 @@ export class ViewModel {
 
     dbaasApi: string;
     accountContext: Observable<any>;
+
+    billing: Observable<Billing> = ko.observable();
+    history: Observable<History> = ko.observable();
 
     subscriptionTab: Observable<boolean> = ko.observable(true);
     // TODO: Figure out how to handle filterableArray
@@ -25,6 +30,9 @@ export class ViewModel {
         this.dbaasApi = dbaasApi;
         this.accountContext = accountContext;
         this.subscriptionTab(!this.configurationTab());
+
+        this.billing(new Billing());
+        this.history(new History());
     }
 
     activeTab(data: string) {
@@ -52,69 +60,68 @@ export class ViewModel {
         $(element).filter("li").slideUp();
     }
 
-    getPromotionConsumed() {
-        let viewModel: ViewModel = this;
+    getPromotionConsumed = (): void => {
         atlas.ajax({
             method: 'GET',
-            url: viewModel.dbaasApi + "/" + viewModel.accountContext().accountAlias + "/promotions",
-            success: function(data: any) {
+            url: this.dbaasApi + "/" + this.accountContext().accountAlias + "/promotions",
+            success: (data: any) => {
                 let shouldBeAvailable = true;
                 data.forEach((p: any) => {
                     if (p.promotionGroup == "Free Trial") {
                         shouldBeAvailable = false;
-                        return
                     }
                 });
-                viewModel.promotionAvailable(shouldBeAvailable)
+                console.log(shouldBeAvailable);
+                this.promotionAvailable(shouldBeAvailable)
             }
-        })
-    }
+        });
+    };
 
-    // TODO: Will this even work with scope of this
-    getSubscription() {
-        let viewModel: ViewModel = this;
+    getSubscription = (): void => {
         this.subscriptionsIsLoading(true);
 
-        // TODO Can this be made cleaner with promise
         atlas.ajax({
             method: 'GET',
-            url: viewModel.dbaasApi + "/" + viewModel.accountContext().accountAlias + "/subscriptions",
-            success: function(data: Array<any>) {
+            url: this.dbaasApi + "/" + this.accountContext().accountAlias + "/subscriptions",
+            success: (data: Array<any>): void => {
                 let subscriptionArray: any =  [];
                 data.forEach((d: any) => {
                     subscriptionArray.push(new Subscription(d))
                 });
-                viewModel.subscriptions(subscriptionArray);
+                this.subscriptions(subscriptionArray);
             },
-            complete: function() {
-                viewModel.subscriptionsIsLoading(false);
+            complete: (): void => {
+                this.subscriptionsIsLoading(false);
             }
         })
     }
 
-    getConfigurations() {
-        let viewModel: ViewModel = this;
+    getConfigurations = (): void => {
         atlas.ajax({
             method: 'GET',
-            url: viewModel.dbaasApi + "/" + viewModel.accountContext().accountAlias + "/configurationprofiles",
-            success: function(data: Array<any>) {
+            url: this.dbaasApi + "/" + this.accountContext().accountAlias + "/configurationprofiles",
+            success: (data: Array<any>) => {
                 let configurationArray: any = [];
                 data.forEach(d => {
-                    d.configProfileUrl = "/" + viewModel.accountContext().accountAlias + "/configurationprofiles/" + d.id;
+                    d.configProfileUrl = "/" + this.accountContext().accountAlias + "/configurationprofiles/" + d.id;
                     configurationArray.push(d);
                 });
-                viewModel.configurations(configurationArray);
+                this.configurations(configurationArray);
             },
-            complete: function() {
-                viewModel.configurationsIsLoading(false);
+            complete: (): void => {
+                this.configurationsIsLoading(false);
             }
         });
     }
 
-    updatePage() {
+    updatePage = (): void => {
         this.getPromotionConsumed();
         this.getSubscription();
         this.getConfigurations();
+        this.billing().loadBilling(this.dbaasApi + "/" + this.accountContext().accountAlias + "/billing", (): void => {
+            console.log("Billing call completed");
+            this.billing.valueHasMutated();
+        });
     }
 
 }

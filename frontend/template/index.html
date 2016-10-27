@@ -15,7 +15,7 @@
     <script src="/external/respond-1.4.2.min.js"></script>
     <![endif]-->
 </head>
-<body>
+<body>/
     <account-switcher></account-switcher>
     <brand-bar></brand-bar>
     <main-nav></main-nav>
@@ -29,24 +29,24 @@
                             Set up and manage high performance, cost efficient, relational databases.
                         </p>
                     </div>
-                    <div class="row billing-summary" id="billingRoot">
+                    <div class="row billing-summary">
                         <div class="col-sm-4 col-xs-6">
                             <div class="heading">MONTH ESTIMATE</div>
-                            <div class="currency" data-bind="text: monthlyEstimate">...</div>
+                            <div class="currency" data-bind="text: billing().monthlyEstimate">...</div>
                         </div>
                         <div class="col-sm-4 col-xs-6">
                             <div class="heading">CURRENT HOUR</div>
-                            <div class="currency" data-bind="text: currentHour">...</div>
+                            <div class="currency" data-bind="text: billing().currentHour">...</div>
                         </div>
                         <div class="col-sm-4 col-xs-6">
                             <div class="heading">MONTH TO DATE</div>
-                            <div class="currency" data-bind="text: monthToDate">...</div>
+                            <div class="currency" data-bind="text: billing().monthToDate">...</div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="primary" id="tabs">
+        <div class="primary">
             <div class="container">
                 <div class="row">
                     <div class="col-sm-12">
@@ -72,7 +72,7 @@
                         <!-- Responsible for displaying subscription list tab and data -->
                         <div id="subscriptionTab" data-bind="visible: subscriptionTab">
                             <div class="new-list-view-toolbar">
-                                <a href='<c:url value="/subscription-create"/>' class="btn btn-primary m-r-xs">
+                                <a href="/subscription-create" class="btn btn-primary m-r-xs">
                                     <svg class="cyclops-icon"><use xlink:href="#icon-plus-circle"></use></svg>
                                     database
                                 </a>
@@ -111,7 +111,7 @@
                         <!-- Responsible for displaying configuration list tab and data -->
                         <div id="configurationTab" data-bind="visible: configurationTab" style="display:none">
                             <div class="new-list-view-toolbar">
-                                <a href='<c:url value="/configProfile-create"/>' class="btn btn-primary m-r-xs">
+                                <a href="/configProfile-create" class="btn btn-primary m-r-xs">
                                     <svg class="cyclops-icon"><use xlink:href="#icon-plus-circle"></use></svg>
                                     configuration profile
                                 </a>
@@ -136,7 +136,7 @@
                 </div>
             </div>
         </div>
-        <div class="container" id="activityHistoryRoot">
+        <div class="container" data-bind="with: history">
             <div class="row">
                 <div class="col-sm-12">
                     <div class="activity-history"
@@ -164,7 +164,8 @@
                                     promise.done(function(contexts) {
                                         var accountContext = contexts.accountContext;
                                         var viewModel = new index.ViewModel("{{.RdbsApi}}", accountContext);
-                                        ko.applyBindings(viewModel, document.getElementById("tabs"));
+                                        ko.applyBindings(viewModel, document.getElementsByTagName("main")[0]);
+                                        setInterval(viewModel.updatePage, 30000);
 
                                         accountContext.subscribe(function(context) {
                                             console.log(context.accountAlias);
@@ -180,20 +181,20 @@
     <script type="text/html" id="listViewSubscriptionsEmptyTemplate">
         <li class="empty-list-view-item feature" data-bind="ifnot: promotionAvailable, visible: !promotionAvailable()">
             <p/>
-            <img src='<c:url value="/img/relationaldb-logo-black-text.svg"/>' width="25%"/>
+            <img src="/img/relationaldb-logo-black-text.svg" width="25%"/>
 
             <h3>Get Started with Relational DB</h3>
             <p class="lead">Relational DB makes it easy to set up and manage high performance, cost efficient, MySQL-compatible relational databases. </p>
-            <p><a href="<c:url value="/subscription-create"/>" class="btn btn-primary btn-lg">create a database</a></p>
+            <p><a href="/subscription-create" class="btn btn-primary btn-lg">create a database</a></p>
         </li>
 
         <li class="empty-list-view-item feature" data-bind="if: promotionAvailable, visible: promotionAvailable">
             <p/>
-            <img src='<c:url value="/img/relationaldb-logo-black-text.svg"/>' width="25%"/>
+            <img src="/img/relationaldb-logo-black-text.svg" width="25%"/>
             <h3 class="text-green">30 Day Free Trial</h3>
             <p class="lead">Relational DB makes it easy to set up and manage high performance, cost efficient, MySQL-compatible relational databases.</p>
             <p>Get a 30 day free trial of 1 vCPU, 1 GB Ram, and 1 GB Storage with or without replication.</p>
-            <p><a href="<c:url value="/subscription-create"/>?promotion=true" class="btn btn-primary btn-lg">start your 30 day free trial</a></p>
+            <p><a href="/subscription-create?promotion=true" class="btn btn-primary btn-lg">start your 30 day free trial</a></p>
         </li>
     </script>
     <script type="text/html" id="listViewSubscriptionsLoadingTemplate">
