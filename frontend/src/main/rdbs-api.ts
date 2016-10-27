@@ -1,14 +1,16 @@
 import {Subscription} from "./model/subscription";
+import {Observable} from "knockout";
 
 declare var atlas: any;
 
 export class RdbsApi {
 
     api: string;
-    accountContext: any;
+    accountContext: Observable<any>;
+
     private subscriptionsApi: SubscriptionAPI;
 
-    constructor(api: string, accountContext: any) {
+    constructor(api: string, accountContext: Observable<any>) {
         this.api = api;
         this.accountContext = accountContext;
     }
@@ -30,17 +32,19 @@ export interface SubscriptionCallback {
 
 class SubscriptionAPI {
 
-    subscriptionsEndpoint: string;
+    api: string;
+    accountContext: Observable<any>;
 
-    constructor(api: string, accountContext: any) {
-        this.subscriptionsEndpoint = api + "/" + accountContext().accountAlias + "/subscriptions"
+    constructor(api: string, accountContext: Observable<any>) {
+        this.api = api;
+        this.accountContext = accountContext;
     }
 
     getSubscriptions = (callback: SubscriptionCallback): void => {
         let subscriptionsArray: Array<Subscription> = [];
         atlas.ajax({
             method: 'GET',
-            url: this.subscriptionsEndpoint,
+            url: this.api + "/" + this.accountContext().accountAlias + "/subscriptions",
             success: (data: Array<any>) => {
                 data.forEach((d: any) => {
                     subscriptionsArray.push(new Subscription(d));

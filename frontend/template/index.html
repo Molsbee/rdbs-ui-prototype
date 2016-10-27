@@ -168,6 +168,7 @@
                                         setInterval(viewModel.updatePage, 30000);
 
                                         accountContext.subscribe(function(context) {
+                                            console.log("Switching to new Account Context");
                                             console.log(context.accountAlias);
                                             viewModel.updatePage();
                                         });
