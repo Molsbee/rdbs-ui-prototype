@@ -12,6 +12,7 @@ export class Subscription {
     location: string;
     host: string;
     port: string;
+    status: string;
     servers: Array<server.Server>;
     cpu: number;
     memory: number;
@@ -31,6 +32,7 @@ export class Subscription {
         this.location = data.location;
         this.host = data.host;
         this.port = data.port;
+        this.status = data.status;
         this.servers = data.servers;
 
         let server = this.servers[0];

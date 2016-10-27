@@ -12,6 +12,7 @@ define(["require", "exports"], function (require, exports) {
             this.location = data.location;
             this.host = data.host;
             this.port = data.port;
+            this.status = data.status;
             this.servers = data.servers;
             var server = this.servers[0];
             this.cpu = server.cpu;

@@ -202,8 +202,8 @@
     <script type="text/html" id="listViewSubscriptionsPopulatedTemplate">
         <!-- ko foreach: {data: subscriptions, afterAdd: addItemAnimation, beforeRemove: removeItemAnimation} -->
         <li>
-            <a data-bind="attr: { href: '<c:url value="/"/>' + accountAlias() + '/subscription/' + id() }">
-            <div class='list-view-editable-item' data-bind="css: {'list-view-item-warning': restartRequired()}">
+            <a data-bind="attr: { href: '/' + accountAlias + '/subscription/' + id }">
+            <div class='list-view-editable-item' data-bind="css: {'list-view-item-warning': restartRequired}">
                 <div class='col col-15'>
                     <span class='col-header'>status</span>
                     <span data-bind="text: status"></span>
@@ -230,7 +230,7 @@
                     <span class='col-header'>engine</span>
                     <span class="tag tag-default" data-bind="text: engine"></span>
                 </div>
-                <div class='col col-15 text-right' data-bind="text: backups().length">
+                <div class='col col-15 text-right' data-bind="text: backups.length">
                     <span class='col-header'>backups</span>
                 </div>
             </div>

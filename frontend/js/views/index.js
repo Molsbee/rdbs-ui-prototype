@@ -1,4 +1,4 @@
-define(["require", "exports", "knockout", "../model/subscription"], function (require, exports, ko, subscription_1) {
+define(["require", "exports", "knockout", "../model/subscription", "jquery"], function (require, exports, ko, subscription_1, $) {
     "use strict";
     var ViewModel = (function () {
         function ViewModel(dbaasApi, accountContext) {
@@ -26,6 +26,15 @@ define(["require", "exports", "knockout", "../model/subscription"], function (re
         };
         ViewModel.prototype.clearFilter = function () {
             console.log("Filter Called");
+        };
+        ViewModel.prototype.addItemAnimation = function (element) {
+            $(element).filter("li")
+                .hide()
+                .animate({ height: "toggle", backgroundColor: '#d9edf7' }, 200)
+                .animate({ backgroundColor: 'transparent' }, 800);
+        };
+        ViewModel.prototype.removeItemAnimation = function (element) {
+            $(element).filter("li").slideUp();
         };
         ViewModel.prototype.getPromotionConsumed = function () {
             var viewModel = this;

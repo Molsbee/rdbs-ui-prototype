@@ -11,7 +11,7 @@ var t, _ = template.ParseFiles(
 
 func Main(w http.ResponseWriter, r *http.Request) {
 	data := struct { RdbsApi string }{
-		RdbsApi: "http://10.121.12.26:8080",
+		RdbsApi: "http://10.121.12.26:8080/v1",
 	}
 	t.ExecuteTemplate(w, "index.html", data)
 }

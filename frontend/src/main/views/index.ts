@@ -2,6 +2,7 @@ import * as ko from "knockout";
 import {Observable} from "knockout";
 import {ObservableArray} from "knockout";
 import {Subscription} from "../model/subscription";
+import * as $ from "jquery";
 
 declare var atlas: any;
 
@@ -38,6 +39,17 @@ export class ViewModel {
 
     clearFilter() {
         console.log("Filter Called")
+    }
+
+    addItemAnimation(element: any) {
+        $(element).filter("li")
+            .hide()
+            .animate({ height: "toggle", backgroundColor: '#d9edf7' }, 200)
+            .animate({ backgroundColor: 'transparent' }, 800);
+    }
+
+    removeItemAnimation(element: any) {
+        $(element).filter("li").slideUp();
     }
 
     getPromotionConsumed() {
