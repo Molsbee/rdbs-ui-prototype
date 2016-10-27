@@ -5,12 +5,15 @@ import {ObservableArray} from "knockout";
 import {Subscription} from "../model/subscription";
 import {Billing} from "../model/billing";
 import {History} from "../model/history";
+import {RdbsApi} from "../rdbs-api";
 
 declare var atlas: any;
 
 export class ViewModel {
 
     dbaasApi: string;
+    rdbsApi: RdbsApi;
+
     accountContext: Observable<any>;
 
     billing: Observable<Billing> = ko.observable();
@@ -28,6 +31,8 @@ export class ViewModel {
 
     constructor(dbaasApi: string, accountContext: Observable<any>) {
         this.dbaasApi = dbaasApi;
+        this.rdbsApi = new RdbsApi(dbaasApi, accountContext);
+
         this.accountContext = accountContext;
         this.subscriptionTab(!this.configurationTab());
 
@@ -80,21 +85,13 @@ export class ViewModel {
     getSubscription = (): void => {
         this.subscriptionsIsLoading(true);
 
-        atlas.ajax({
-            method: 'GET',
-            url: this.dbaasApi + "/" + this.accountContext().accountAlias + "/subscriptions",
-            success: (data: Array<any>): void => {
-                let subscriptionArray: any =  [];
-                data.forEach((d: any) => {
-                    subscriptionArray.push(new Subscription(d))
-                });
-                this.subscriptions(subscriptionArray);
-            },
-            complete: (): void => {
-                this.subscriptionsIsLoading(false);
-            }
-        })
-    }
+        // TODO: Could this be improved
+        var subscriptionAPI = this.rdbsApi.subscriptions();
+        subscriptionAPI.getSubscriptions((subscriptions) => {
+            this.subscriptions(subscriptions);
+            this.subscriptionsIsLoading(false);
+        });
+    };
 
     getConfigurations = (): void => {
         atlas.ajax({

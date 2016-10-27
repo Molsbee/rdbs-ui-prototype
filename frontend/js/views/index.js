@@ -1,4 +1,4 @@
-define(["require", "exports", "jquery", "knockout", "../model/subscription", "../model/billing", "../model/history"], function (require, exports, $, ko, subscription_1, billing_1, history_1) {
+define(["require", "exports", "jquery", "knockout", "../model/billing", "../model/history", "../rdbs-api"], function (require, exports, $, ko, billing_1, history_1, rdbs_api_1) {
     "use strict";
     var ViewModel = (function () {
         function ViewModel(dbaasApi, accountContext) {
@@ -31,19 +31,11 @@ define(["require", "exports", "jquery", "knockout", "../model/subscription", "..
             };
             this.getSubscription = function () {
                 _this.subscriptionsIsLoading(true);
-                atlas.ajax({
-                    method: 'GET',
-                    url: _this.dbaasApi + "/" + _this.accountContext().accountAlias + "/subscriptions",
-                    success: function (data) {
-                        var subscriptionArray = [];
-                        data.forEach(function (d) {
-                            subscriptionArray.push(new subscription_1.Subscription(d));
-                        });
-                        _this.subscriptions(subscriptionArray);
-                    },
-                    complete: function () {
-                        _this.subscriptionsIsLoading(false);
-                    }
+                // TODO: Could this be improved
+                var subscriptionAPI = _this.rdbsApi.subscriptions();
+                subscriptionAPI.getSubscriptions(function (subscriptions) {
+                    _this.subscriptions(subscriptions);
+                    _this.subscriptionsIsLoading(false);
                 });
             };
             this.getConfigurations = function () {
@@ -73,6 +65,7 @@ define(["require", "exports", "jquery", "knockout", "../model/subscription", "..
                 });
             };
             this.dbaasApi = dbaasApi;
+            this.rdbsApi = new rdbs_api_1.RdbsApi(dbaasApi, accountContext);
             this.accountContext = accountContext;
             this.subscriptionTab(!this.configurationTab());
             this.billing(new billing_1.Billing());
