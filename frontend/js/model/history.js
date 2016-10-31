@@ -1,25 +1,15 @@
-define(["require", "exports", "knockout"], function (require, exports, ko) {
+define(["require", "exports", "knockout", "../api/ActionLogAPI"], function (require, exports, ko, ActionLogAPI_1) {
     "use strict";
-    var ActionLog = (function () {
-        function ActionLog() {
-        }
-        ActionLog.prototype.ActionLog = function (data) {
-            this.timeStamp = moment.utc(data.timeStamp).local();
-            this.message = data.message;
-            this.details = data.details;
-            this.user = data.user;
-        };
-        return ActionLog;
-    }());
     var History = (function () {
-        function History() {
+        function History(api, accountContext) {
             var _this = this;
             this.actions = ko.observableArray();
             this.sortedActionsGroupedByDate = ko.computed(function () {
+                console.log("Sorting Actions grouped by Date");
                 var sortedActions = [];
                 var groupByDate = {};
                 _this.actions().forEach(function (a) {
-                    var dateKey = a.timeStamp.format("dddd MMM DD, YY");
+                    var dateKey = a.timestamp.format("dddd MMM DD, YY");
                     if (!groupByDate[dateKey]) {
                         groupByDate[dateKey] = [];
                     }
@@ -27,15 +17,21 @@ define(["require", "exports", "knockout"], function (require, exports, ko) {
                 });
                 for (var key in groupByDate) {
                     groupByDate[key].sort(function (a, b) {
-                        return b.timeStamp - a.timeStamp;
+                        return b.timestamp - a.timestamp;
                     });
                     sortedActions.push({ date: key, actions: groupByDate[key] });
                 }
                 sortedActions.sort(function (a, b) {
-                    return a.timeStamp - b.timeStamp;
+                    return a.timestamp - b.timestamp;
                 });
                 return sortedActions;
             });
+            this.loadActionLogs = function () {
+                _this.actionLogApi.getActionLogs(function (actionLogs) {
+                    _this.actions(actionLogs);
+                });
+            };
+            this.actionLogApi = new ActionLogAPI_1.ActionLogAPI(api, accountContext);
         }
         return History;
     }());

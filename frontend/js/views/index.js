@@ -31,9 +31,7 @@ define(["require", "exports", "jquery", "knockout", "../model/billing", "../mode
             };
             this.getSubscription = function () {
                 _this.subscriptionsIsLoading(true);
-                // TODO: Could this be improved
-                var subscriptionAPI = _this.rdbsApi.subscriptions();
-                subscriptionAPI.getSubscriptions(function (subscriptions) {
+                _this.rdbsApi.subscriptions().getSubscriptions(function (subscriptions) {
                     _this.subscriptions(subscriptions);
                     _this.subscriptionsIsLoading(false);
                 });
@@ -59,17 +57,18 @@ define(["require", "exports", "jquery", "knockout", "../model/billing", "../mode
                 _this.getPromotionConsumed();
                 _this.getSubscription();
                 _this.getConfigurations();
-                _this.billing().loadBilling(_this.dbaasApi + "/" + _this.accountContext().accountAlias + "/billing", function () {
+                _this.billing().loadCustomerBilling(function () {
                     console.log("Billing call completed");
                     _this.billing.valueHasMutated();
                 });
+                _this.history().loadActionLogs();
             };
             this.dbaasApi = dbaasApi;
             this.rdbsApi = new rdbs_api_1.RdbsApi(dbaasApi, accountContext);
             this.accountContext = accountContext;
             this.subscriptionTab(!this.configurationTab());
-            this.billing(new billing_1.Billing());
-            this.history(new history_1.History());
+            this.billing(new billing_1.Billing(dbaasApi, accountContext));
+            this.history(new history_1.History(dbaasApi, accountContext));
         }
         ViewModel.prototype.activeTab = function (data) {
             if (data == "database") {

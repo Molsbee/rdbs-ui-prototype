@@ -15,7 +15,7 @@
     <script src="/external/respond-1.4.2.min.js"></script>
     <![endif]-->
 </head>
-<body>/
+<body>
     <account-switcher></account-switcher>
     <brand-bar></brand-bar>
     <main-nav></main-nav>
@@ -145,8 +145,8 @@
             </div>
         </div>
     </main>
-    <script src="../external/require.js"></script>
-    <script src="../js/require-config.js"></script>
+    <script src="/external/require.js"></script>
+    <script src="/js/require-config.js"></script>
     <script>
         require(["jquery", "jqueryUI", "knockout", "knockout-validation", "auth0"],
                 function(jquery, jqueryUI, ko, kovalidation, auth0) {
@@ -154,8 +154,8 @@
                     window.Auth0 = auth0;
                     require(["cyclops", "atlas"], function(cyclops, atlas) {
                         window.atlas = atlas;
-                        require(["../js/model/subscription", "../js/model/backup", "../js/model/server", "../js/views/index"],
-                                function(subscription, backup, server, index) {
+                        require(["views/index"],
+                                function(index) {
                                     var promise = atlas.liftoff({
                                         env: "prod",
                                         mainNavId: "Main.Services.RelationalDatabaseService"
@@ -280,9 +280,9 @@
                 <li>
                     <div class="timestamp" data-bind="text: timestamp.format('hh:mm:ss a')"/>
                     <div class="details">
-                        <div class="subject" data-bind="text: subject"/>
-                        <div class="body" data-bind="text: body"/>
-                        <div class="attribution"><span class="createdBy" data-bind="text: attribution"/></div>
+                        <div class="subject" data-bind="text: message"/>
+                        <div class="body" data-bind="text: details"/>
+                        <div class="attribution"><span class="createdBy" data-bind="text: user"/></div>
                     </div>
                 </li>
             </ol>

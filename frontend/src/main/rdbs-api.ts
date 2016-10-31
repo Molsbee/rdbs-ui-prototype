@@ -1,5 +1,7 @@
-import {Subscription} from "./model/subscription";
 import {Observable} from "knockout";
+import {BillingAPI} from "./api/BillingAPI";
+import {ActionLogAPI} from "./api/ActionLogAPI";
+import {SubscriptionAPI} from "./api/SubscriptionAPI";
 
 declare var atlas: any;
 
@@ -9,6 +11,8 @@ export class RdbsApi {
     accountContext: Observable<any>;
 
     private subscriptionsApi: SubscriptionAPI;
+    private actionLogApi: ActionLogAPI;
+    private billingAPI: BillingAPI;
 
     constructor(api: string, accountContext: Observable<any>) {
         this.api = api;
@@ -17,43 +21,29 @@ export class RdbsApi {
 
     subscriptions = () => {
         if (!this.subscriptionsApi) {
-            console.log("New instance of subscript api created");
+            console.log("Creating new instance of subscription api");
             this.subscriptionsApi = new SubscriptionAPI(this.api, this.accountContext);
         }
 
         return this.subscriptionsApi;
-    }
+    };
 
-}
+    actionLog = () => {
+        if (!this.actionLogApi) {
+            console.log("Creating new instance of action log api");
+            this.actionLogApi = new ActionLogAPI(this.api, this.accountContext);
+        }
 
-export interface SubscriptionCallback {
-    (subsciptions: Array<Subscription>) : void;
-}
+        return this.actionLogApi;
+    };
 
-class SubscriptionAPI {
+    billing = () => {
+        if (!this.billingAPI) {
+            console.log("Creating new instance of billing api");
+            this.billingAPI = new BillingAPI(this.api, this.accountContext);
+        }
 
-    api: string;
-    accountContext: Observable<any>;
-
-    constructor(api: string, accountContext: Observable<any>) {
-        this.api = api;
-        this.accountContext = accountContext;
-    }
-
-    getSubscriptions = (callback: SubscriptionCallback): void => {
-        let subscriptionsArray: Array<Subscription> = [];
-        atlas.ajax({
-            method: 'GET',
-            url: this.api + "/" + this.accountContext().accountAlias + "/subscriptions",
-            success: (data: Array<any>) => {
-                data.forEach((d: any) => {
-                    subscriptionsArray.push(new Subscription(d));
-                });
-            },
-            complete: () => {
-                callback(subscriptionsArray);
-            }
-        });
-    }
+        return this.billingAPI;
+    };
 
 }

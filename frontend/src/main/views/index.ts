@@ -1,7 +1,5 @@
 import * as $ from "jquery";
 import * as ko from "knockout";
-import {Observable} from "knockout";
-import {ObservableArray} from "knockout";
 import {Subscription} from "../model/subscription";
 import {Billing} from "../model/billing";
 import {History} from "../model/history";
@@ -14,30 +12,30 @@ export class ViewModel {
     dbaasApi: string;
     rdbsApi: RdbsApi;
 
-    accountContext: Observable<any>;
+    accountContext: KnockoutObservable<any>;
 
-    billing: Observable<Billing> = ko.observable();
-    history: Observable<History> = ko.observable();
+    billing: KnockoutObservable<Billing> = ko.observable<Billing>();
+    history: KnockoutObservable<History> = ko.observable<History>();
 
-    subscriptionTab: Observable<boolean> = ko.observable(true);
+    subscriptionTab: KnockoutObservable<boolean> = ko.observable(true);
     // TODO: Figure out how to handle filterableArray
-    subscriptions: ObservableArray<Subscription> = ko.observableArray();
-    subscriptionsIsLoading: Observable<boolean> = ko.observable(true);
-    promotionAvailable: Observable<boolean> = ko.observable(false);
+    subscriptions: KnockoutObservableArray<Subscription> = ko.observableArray<Subscription>();
+    subscriptionsIsLoading: KnockoutObservable<boolean> = ko.observable(true);
+    promotionAvailable: KnockoutObservable<boolean> = ko.observable(false);
 
-    configurationTab: Observable<boolean> = ko.observable(window.location.hash == "#configuration");
-    configurations: ObservableArray<any> = ko.observableArray();
-    configurationsIsLoading: Observable<boolean> = ko.observable(true);
+    configurationTab: KnockoutObservable<boolean> = ko.observable(window.location.hash == "#configuration");
+    configurations: KnockoutObservableArray<any> = ko.observableArray();
+    configurationsIsLoading: KnockoutObservable<boolean> = ko.observable(true);
 
-    constructor(dbaasApi: string, accountContext: Observable<any>) {
+    constructor(dbaasApi: string, accountContext: KnockoutObservable<any>) {
         this.dbaasApi = dbaasApi;
         this.rdbsApi = new RdbsApi(dbaasApi, accountContext);
 
         this.accountContext = accountContext;
         this.subscriptionTab(!this.configurationTab());
 
-        this.billing(new Billing());
-        this.history(new History());
+        this.billing(new Billing(dbaasApi, accountContext));
+        this.history(new History(dbaasApi, accountContext));
     }
 
     activeTab(data: string) {
@@ -84,10 +82,7 @@ export class ViewModel {
 
     getSubscription = (): void => {
         this.subscriptionsIsLoading(true);
-
-        // TODO: Could this be improved
-        var subscriptionAPI = this.rdbsApi.subscriptions();
-        subscriptionAPI.getSubscriptions((subscriptions) => {
+        this.rdbsApi.subscriptions().getSubscriptions((subscriptions) => {
             this.subscriptions(subscriptions);
             this.subscriptionsIsLoading(false);
         });
@@ -115,10 +110,13 @@ export class ViewModel {
         this.getPromotionConsumed();
         this.getSubscription();
         this.getConfigurations();
-        this.billing().loadBilling(this.dbaasApi + "/" + this.accountContext().accountAlias + "/billing", (): void => {
+
+        this.billing().loadCustomerBilling(() => {
             console.log("Billing call completed");
             this.billing.valueHasMutated();
         });
+
+        this.history().loadActionLogs()
     }
 
 }

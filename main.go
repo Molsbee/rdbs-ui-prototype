@@ -24,6 +24,7 @@ func main() {
 	router.PathPrefix("/img/").Handler(http.StripPrefix("/img/", img))
 
 	router.HandleFunc("/", resource.Main)
+	router.HandleFunc("/{accountAlias}/subscription/{subscriptionId}/restore", resource.Restore)
 
 	log.Fatal(http.ListenAndServe(":8080", router))
 }

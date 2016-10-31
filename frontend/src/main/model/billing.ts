@@ -1,12 +1,5 @@
+import {BillingAPI} from "../api/BillingAPI";
 declare var atlas: any;
-
-interface BillingResponse {
-    productCode: string;
-    metadata: Object;
-    monthlyEstimate: string;
-    monthToDate: string;
-    currentHour: string;
-}
 
 interface Callback {
     (): void;
@@ -14,40 +7,43 @@ interface Callback {
 
 export class Billing {
 
-    // billingUrl: string;
+    private billingApi: BillingAPI;
 
     currentHour: string;
     monthToDate: string;
     monthlyEstimate: string;
 
-    constructor() {
+    constructor(api: string, accountContext: KnockoutObservable<any>) {
+        this.billingApi = new BillingAPI(api, accountContext);
     }
 
-    loadBilling(billingURL: string, callback: Callback) {
+    loadCustomerBilling = (callback: Callback): void => {
         console.log("loading billing data");
-        let self = this;
-        self.currentHour = "...";
-        self.monthToDate = "...";
-        self.monthlyEstimate = "...";
+        this.currentHour = "...";
+        this.monthToDate = "...";
+        this.monthlyEstimate = "...";
 
-        atlas.ajax({
-            method: 'GET',
-            url: billingURL,
-            success: function(response: BillingResponse) {
-                self.currentHour = response.currentHour;
-                self.monthToDate = response.monthToDate;
-                self.monthlyEstimate = response.monthlyEstimate;
-            },
-            error: function() {
-                self.currentHour = "-";
-                self.monthToDate = "-";
-                self.monthlyEstimate = "-"
-            },
-            complete: function() {
-                callback();
-            }
+        this.billingApi.getCustomerBilling((billing) => {
+            this.currentHour = billing.currentHour;
+            this.monthToDate = billing.monthToDate;
+            this.monthlyEstimate = billing.monthlyEstimate;
+            callback();
+        });
+    };
+
+    loadSubscriptionBilling = (subscriptionId: number, callback: Callback): void => {
+        console.log("loading subscription billing data");
+        this.currentHour = "...";
+        this.monthToDate = "...";
+        this.monthlyEstimate = "...";
+
+        this.billingApi.getSubscriptionBilling(subscriptionId, (billing) => {
+            this.currentHour = billing.currentHour;
+            this.monthToDate = billing.monthToDate;
+            this.monthlyEstimate = billing.monthlyEstimate;
+            callback();
         })
-    }
+    };
 
 }
 

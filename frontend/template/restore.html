@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en" class="cyclops">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Relational DB</title>
+
+    <link href="https://assets.ctl.io/cyclops/1.6.1/css/cyclops.min.css" rel="stylesheet" type="text/css">
+    <link href="https://assets.ctl.io/atlas/2.0.0-beta.4/css/atlas.min.css" rel="stylesheet" type="text/css">
+    <link href="/css/site.css" rel="stylesheet" type="text/css">
+
+    <!--[if lt IE 9]>
+    <script src="/external/html5shiv-3.7.2.min.js"></script>
+    <script src="/external/respond-1.4.2.min.js"></script>
+    <![endif]-->
+</head>
+
+<body id="relational-db">
+<account-switcher></account-switcher>
+<brand-bar></brand-bar>
+<main-nav></main-nav>
+<main>
+    <div class="container" id="mainContent">
+        <div class="row">
+            <div class="col-sm-12">
+                <ol class="breadcrumb">
+                    <li data-bind="with: toSubscription">
+                        <a href="/{{.AccountAlias}}/subscription/{{.SubscriptionId}}">
+                            <svg class="cyclops-icon"><use xlink:href='#icon-chevron-left' /></svg>
+                            <span data-bind="text: externalId"></span></a>
+                    </li>
+                </ol>
+                <div class="content-header" data-bind="with: toSubscription">
+                    <h1>Restore To: <span data-bind="text: externalId"></span> </h1>
+                </div>
+                <form id="restoreForm" class="form-horizontal" data-bind="validationOptions: { insertMessages: false, allowHtmlMessages: true, errorsAsTitle: false}">
+                    <fieldset>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Restore From</label>
+                            <div class="col-sm-6">
+                                <select class="form-control" data-bind="options: fromSubscriptions,
+                                                                        optionsText: function(subscription) {
+                                                                            return subscription.location + ' ' + subscription.externalId + ' (port: ' + subscription.port + ', storage: ' + subscription.storage + ' GB)'
+                                                                        },
+                                                                        value: fromSubscription,
+                                                                        optionsAfterRender: renderFromSubscriptions">
+                                </select>
+                                <p class="help-block">Restore from any subscription of equal or smaller storage size.</p>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Restore Type</label>
+                            <div class="col-sm-6">
+                                <div class="radio">
+                                    <label>
+                                        <input type="radio" name="restoreTypeRadios" id="fullRestore" value="full" data-bind="checked: restoreType">Full Restore
+                                    </label>
+                                </div>
+                                <div class="radio">
+                                    <label>
+                                        <input type="radio" name="restoreTypeRadios" id="pointInTimeRestore" value="point-in-time" data-bind="checked: restoreType">Point in Time Restore
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- START: Full Restore -->
+                        <div class="form-group" name="fullRestoreFromBackup" data-bind="visible: restoreType() == 'full', with: fromSubscription">
+                            <label class="col-sm-3 control-label">Backup</label>
+                            <div class="col-sm-6">
+                                <select class="form-control" data-bind="options: backups,
+                                                                        optionsText: 'formattedBackupTime',
+                                                                        value: $parent.fromBackup">
+                                </select>
+                            </div>
+                        </div>
+                        <!-- END: Full Restore -->
+
+
+                        <!-- START: Point-In-Time Restore -->
+                        <div data-bind="visible: restoreType() == 'point-in-time'">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Restore Point</label>
+                                <div class="col-sm-6">
+                                    <date-time-picker params="dateTime: selectedDateTime"></date-time-picker>
+                                    <p class="hide" data-bind="validationMsg: selectedDateTime"></p>
+                                    <p class="help-block">Restore point <span data-bind="text: selectedDateTime().format('MMMM DD, YYYY HH:mm:ss.SSS z')"></span>.</p>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-sm-6 col-sm-offset-3">
+                                    <div class="alert alert-info" role="alert">
+                                        <div class="alert-icon">
+                                            <svg class="cyclops-icon"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#icon-info-circle"></use></svg>
+                                        </div>
+                                        <p>Select any point in time between available restore points:<br></p>
+                                        <ul class="list-unstyled" data-bind="foreach: restorePoints">
+                                            <li style="margin-left:4em">
+                                                <span data-bind="text: formattedStartPosition"></span> and <span data-bind="text: formattedEndPosition"></span><br>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- END: Point-In-Time Restore -->
+
+                        <div class="form-group">
+                            <div class="col-sm-6 col-sm-offset-3">
+                                <div class="alert alert-warning" role="alert">
+                                    <div class="alert-icon">
+                                        <svg class="cyclops-icon"><use xlink:href='#icon-exclamation-circle'/></svg>
+                                    </div>
+                                    <h4>Warning</h4>
+                                    <p>This restoration will overwrite the current database.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <div class="form-group form-submit">
+                        <div class="col-sm-offset-3 col-sm-9">
+                            <button class="btn btn-primary btn-lg" data-bind="click: restoreSubscription">restore</button>
+                            <button class="btn btn-link btn-lg" data-bind="click: cancel">cancel</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+<script src="/external/require.js"></script>
+<script src="/js/require-config.js"></script>
+<script>
+    require(["jquery", "jqueryUI", "knockout", "knockout-validation", "auth0", "moment"],
+            function(jquery, jqueryUI, ko, kovalidation, auth0, moment) {
+                window.ko = ko;
+                window.Auth0 = auth0;
+                window.moment = moment;
+                require(["cyclops", "atlas"], function(cyclops, atlas) {
+                    window.atlas = atlas;
+                    require(["views/restore"], function(restore) {
+                        var promise = atlas.liftoff({
+                            env: "prod",
+                            mainNavId: "Main.Services.RelationalDatabaseService"
+                        });
+
+                        promise.done(function(contexts) {
+                            var accountContext = contexts.accountContext;
+                            var viewModel = new restore.ViewModel("{{.SubscriptionId}}", "{{.RdbsApi}}", accountContext);
+                            ko.applyBindings(viewModel, document.getElementsByTagName("main")[0]);
+
+                            accountContext.subscribe(function(context) {
+                                console.log("Switching to new Account Context")
+                                console.log(context);
+                            });
+                        });
+                    });
+                });
+            });
+</script>
+
+<!--<script src="<c:url value="/js/model/subscription.js"/>"></script>-->
+<!--<script src="<c:url value="/js/model/backup.js"/>"></script>-->
+<script>
+//    var RestorePoint = function(data) {
+//        var self = this;
+//
+//        self.startPosition = moment.utc(data.startPosition);
+//        self.endPosition = moment.utc(data.endPosition);
+//
+//        self.formattedStartPosition = self.startPosition.format('MMMM DD, YYYY HH:mm z');
+//        self.formattedEndPosition = self.endPosition.format('MMMM DD, YYYY HH:mm z');
+//
+//        return self;
+//    }
+//    var PageViewModel = function() {
+//        var self = this;
+
+        // TODO Consolidate to one object - having problems with toSubscription
+//        self.toSubscription = ko.observable();
+//        self.restoreType = ko.observable("full");
+
+        // Populate toSubscription Data and call getSubscriptionsWithBackups to populate full list of subscriptions
+        // under a give account alias
+//        atlas.ajax({
+//            method: 'GET',
+//            url: '${dbaasApi}/${accountAlias}/subscriptions/${subscriptionId}',
+//            success: function(data) {
+//                self.toSubscription(new Subscription(data));
+//                self.getSubscriptionsWithBackups();
+//            },
+//            error: function(jqXhr, textStatus, errorThrown) {
+//                <!-- TODO: Implement Error Handling -->
+//            }
+//        });
+
+//        self.fromSubscription = ko.observable();
+//        self.fromSubscriptions = ko.observableArray();
+//        self.renderFromSubscriptions = function(option, item) {
+//            if (self.toSubscription().id === item.id) {
+//                ko.applyBindingsToNode(option.parentElement, {value: item}, item);
+//            }
+//            if (self.toSubscription().storage() < item.storage()) {
+//                ko.applyBindingsToNode(option, {disable: true}, item);
+//            }
+//        };
+
+//        self.getSubscriptionsWithBackups = function() {
+//            atlas.ajax({
+//                method: 'GET',
+//                url: "${dbaasApi}/${accountAlias}/subscriptions?engine=" + self.toSubscription().engine,
+//                success: function(data) {
+//                    var subscriptions = [];
+//                    for (var i = 0; i < data.length; i++) {
+//                        var subscription = new Subscription(data[i])
+//                        if (subscription.backups().length != 0) {
+//                            subscriptions.push(subscription);
+//                        }
+//                    }
+//
+//                    subscriptions.sort(function(a, b) {
+//                        // Sort by location
+//                        if (a.location < b.location) { return -1 }
+//                        if (a.location > b.location) { return 1 }
+//                        // If locations equal sort by external id
+//                        if (a.externalId < b.externalId) { return -1 }
+//                        if (a.externalId > b.externalId) { return 1 }
+//                        return 0;
+//                    })
+//                    self.fromSubscriptions(subscriptions);
+//                }
+//            });
+//        };
+
+//        self.fromBackup = ko.observable();
+
+//        self.selectedDateTime = ko.observable(moment().utc().seconds(59).milliseconds(999));
+//        self.restorePoints = ko.observableArray();
+//        self.fromSubscription.subscribe(function(subscription) {
+//            if (subscription) {
+//                atlas.ajax({
+//                    method: 'GET',
+//                    url: "${dbaasApi}/${accountAlias}/subscriptions" + subscription.id + "/backups/restorePoints",
+//                    success: function(data) {
+//                        var points = [];
+//                        for (var i = 0; i < data.length; i++) {
+//                            var restorePoint = new RestorePoint(data[i]);
+//                            console.log(restorePoint);
+//                            points.push(restorePoint);
+//                        }
+//                        self.restorePoints(points);
+//                    }
+//                });
+//            }
+//        });
+//        self.fromSubscription.valueHasMutated();
+
+        // Setup custom validation for the selectedDateTime to validate that if a person is performing
+        // a point in time restore that their provided time should be within an available restore point.
+//        self.selectedDateTime.extend({
+//            validation: {
+//                validator: function(val) {
+//                    var isValid = false;
+//                    for (var i = 0; i < self.restorePoints().length; i++) {
+//                        var point = self.restorePoints()[i];
+//                        if (val.isBetween(point.startPosition, point.endPosition, null, '[]')) {
+//                            isValid = true;
+//                        }
+//                    }
+//
+//                    return isValid;
+//                },
+//                message: "Selected date time must be between an available restore point",
+//                onlyIf: function() {
+//                    return self.restoreType() == 'point-in-time';
+//                }
+//            }
+//        });
+
+//????
+//        ko.validation.init();
+//        self.errors = ko.validation.group([
+//            self.selectedDateTime,
+//        ]);
+//????
+//        self.restoreSubscription = function() {
+//            if (self.restoreType() == 'point-in-time') {
+//                if (self.errors().length < 1) {
+//                    var request = {
+//                        type: "point-in-time-restore",
+//                        toSubscriptionId: ${subscriptionId},
+//                        restoreToTime: self.selectedDateTime().valueOf()
+//                    };
+//
+//                    atlas.ajax({
+//                        method: 'POST',
+//                        url: "${dbaasApi}/${accountAlias}/subscriptions/" + self.fromSubscription().id + "/backups/operations",
+//                        data: JSON.stringify(request),
+//                        contentType: 'application/json',
+//                        success: function() {
+//                            window.location.href = '<c:url value="/${accountAlias}/subscription/${subscriptionId}"/>';
+//                        },
+//                        error: function(jqXhr, textStatus, errorThrown) {
+//                            alert("Error performing point in time restore request: " + errorThrown);
+//                        }
+//                    })
+//                } else {
+//                    self.errors.showAllMessages();
+//                }
+//            } else {
+//                var request = {
+//                    type: "restore",
+//                    toSubscriptionId: "${subscriptionId}"
+//                };
+//
+//                atlas.ajax({
+//                    method: 'POST',
+//                    url: "${dbaasApi}/${accountAlias}/subscriptions/" + self.fromSubscription().id + "/backups/" + self.fromBackup().id + "/operations",
+//                    data: JSON.stringify(request),
+//                    contentType: 'application/json',
+//                    success: function() {
+//                        window.location.href = '<c:url value="/${accountAlias}/subscription/${subscriptionId}"/>';
+//                    },
+//                    error: function(jqXhr, textStatus, errorThrown) {
+//                        alert("Error restoring subscription: " + errorThrown);
+//                    }
+//                });
+//            }
+//        };
+
+//        self.cancel = function() {
+//            window.location.href = '<c:url value="/${accountAlias}/subscription/${subscriptionId}"/>';
+//        };
+//
+//        return self;
+//    };
+
+//    $(function(){
+//        var promise = atlas.liftoff({
+//            env: "prod",
+//            mainNavId: "Main.Services.RelationalDatabaseService",
+//        });
+//
+//        var pageViewModel = new PageViewModel();
+//        ko.applyBindings(pageViewModel, document.getElementById("mainContent"));
+//        promise.done(function(contexts) {
+//            contexts.accountContext.subscribe(function() {
+//                window.location = "<c:url value="/"/>";
+//            });
+//        });
+//    });
+</script>
+
+
+</body>
+</html>
