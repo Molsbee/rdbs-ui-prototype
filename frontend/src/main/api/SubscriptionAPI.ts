@@ -1,6 +1,6 @@
 import {Server} from "../model/server";
-import {Backup} from "../model/backup";
 import {Subscription} from "../model/subscription";
+import {BackupResponse} from "./BackupAPI";
 
 declare var atlas: any;
 
@@ -19,7 +19,7 @@ export interface SubscriptionResponse {
     host: string;
     port: number;
     certificate: string;
-    backups: Array<Backup>;
+    backups: Array<BackupResponse>;
     configurationProfile: any;
 }
 

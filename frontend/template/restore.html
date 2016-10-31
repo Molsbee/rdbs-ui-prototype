@@ -71,7 +71,9 @@
                             <label class="col-sm-3 control-label">Backup</label>
                             <div class="col-sm-6">
                                 <select class="form-control" data-bind="options: backups,
-                                                                        optionsText: 'formattedBackupTime',
+                                                                        optionsText: function(item) {
+                                                                            return item.formattedBackupTime();
+                                                                        },
                                                                         value: $parent.fromBackup">
                                 </select>
                             </div>

@@ -61,6 +61,7 @@ export class ViewModel {
 
         this.fromSubscription.subscribe((subscription: Subscription) => {
             if (subscription) {
+                console.log(subscription.backups[0]);
                 this.backupApi.getRestorePoints(subscription.id, (restorePoints) => {
                     this.restorePoints(restorePoints);
                 })

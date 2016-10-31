@@ -96,6 +96,7 @@ define(["require", "exports", "knockout", "moment", "../api/SubscriptionAPI", ".
             });
             this.fromSubscription.subscribe(function (subscription) {
                 if (subscription) {
+                    console.log(subscription.backups[0]);
                     _this.backupApi.getRestorePoints(subscription.id, function (restorePoints) {
                         _this.restorePoints(restorePoints);
                     });

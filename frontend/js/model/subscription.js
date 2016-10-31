@@ -1,7 +1,9 @@
-define(["require", "exports"], function (require, exports) {
+define(["require", "exports", "./backup"], function (require, exports, backup_1) {
     "use strict";
     var Subscription = (function () {
         function Subscription(data) {
+            var _this = this;
+            this.backups = [];
             this.id = data.id;
             this.accountAlias = data.accountAlias;
             this.externalId = data.externalId;
@@ -18,7 +20,9 @@ define(["require", "exports"], function (require, exports) {
             this.memory = server.memory;
             this.storage = server.storage;
             this.activeServerRole = getActiveServerRole(data.servers);
-            this.backups = data.backups;
+            data.backups.forEach(function (b) {
+                _this.backups.push(new backup_1.Backup(b));
+            });
             this.backupIsEmpty = (data.backups.length == 0) ? true : false;
             this.restartRequired = data.restartRequired;
         }

@@ -12,11 +12,14 @@ define(["require", "exports", "moment"], function (require, exports, moment) {
     exports.RestorePoint = RestorePoint;
     var Backup = (function () {
         function Backup(data) {
+            var _this = this;
+            this.formattedBackupTime = function () {
+                return moment.utc(_this.backupTime).format("MMMM DD, YYYY HH:mm:ss z");
+            };
             this.id = data.id;
             this.fileName = data.fileName;
             this.backupTime = data.backupTime;
             this.backupType = data.backupType;
-            this.formattedBackupTime = moment.utc(data.backupTime).format("MMMM DD, YYYY HH:mm:ss z");
             this.status = data.status;
             this.size = data.size;
         }

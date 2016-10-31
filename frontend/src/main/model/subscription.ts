@@ -14,7 +14,7 @@ export class Subscription {
     port: number;
     status: string;
     servers: Array<Server>;
-    backups: Array<Backup>;
+    backups: Array<Backup> = [];
     restartRequired: boolean;
 
     isReplicated: boolean;
@@ -41,10 +41,12 @@ export class Subscription {
         this.cpu = server.cpu;
         this.memory = server.memory;
         this.storage = server.storage;
-
         this.activeServerRole = getActiveServerRole(data.servers);
 
-        this.backups = data.backups;
+        data.backups.forEach((b) => {
+            this.backups.push(new Backup(b));
+        });
+        
         this.backupIsEmpty = (data.backups.length == 0) ? true : false;
         this.restartRequired = data.restartRequired;
     }

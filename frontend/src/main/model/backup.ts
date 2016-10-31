@@ -1,5 +1,5 @@
 import * as moment from "moment";
-import {RestorePointResponse} from "../api/BackupAPI";
+import {RestorePointResponse, BackupResponse} from "../api/BackupAPI";
 import Moment = moment.Moment;
 
 export class RestorePoint {
@@ -25,18 +25,20 @@ export class Backup {
     fileName: string;
     backupType: string;
     backupTime: string;
-    formattedBackupTime: string;
     status: string;
-    size: string;
+    size: number;
 
-    constructor(data: any) {
+    constructor(data: BackupResponse) {
         this.id = data.id;
         this.fileName = data.fileName;
         this.backupTime = data.backupTime;
         this.backupType = data.backupType;
-        this.formattedBackupTime = moment.utc(data.backupTime).format("MMMM DD, YYYY HH:mm:ss z");
         this.status = data.status;
         this.size = data.size;
+    }
+
+    formattedBackupTime = (): string => {
+        return moment.utc(this.backupTime).format("MMMM DD, YYYY HH:mm:ss z");
     }
 
 }

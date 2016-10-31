@@ -3,6 +3,15 @@ import Moment = moment.Moment;
 
 declare var atlas: any;
 
+export interface BackupResponse {
+    id: number;
+    fileName: string;
+    backupTime: string;
+    backupType: string;
+    status: string;
+    size: number;
+}
+
 export interface RestorePointResponse {
     startPosition: Moment;
     endPosition: Moment;
