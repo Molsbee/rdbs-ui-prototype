@@ -1,13 +1,12 @@
 import * as ko from "knockout";
-import {Computed, ObservableArray} from "knockout";
 import {ActionLog, ActionLogAPI} from "../api/ActionLogAPI";
 
 export class History {
 
     actionLogApi: ActionLogAPI;
 
-    actions: ObservableArray<ActionLog> = ko.observableArray();
-    sortedActionsGroupedByDate: Computed<any> = ko.computed(() => {
+    actions: KnockoutObservableArray<ActionLog> = ko.observableArray<ActionLog>();
+    sortedActionsGroupedByDate: KnockoutComputed<any> = ko.computed(() => {
         console.log("Sorting Actions grouped by Date");
 
         let sortedActions: any = [];
@@ -35,7 +34,7 @@ export class History {
         return sortedActions;
     });
 
-    constructor(api: string, accountContext: any) {
+    constructor(api: string, accountContext: KnockoutObservable<any>) {
         this.actionLogApi = new ActionLogAPI(api, accountContext);
     }
 

@@ -1,4 +1,3 @@
-import {Observable} from "knockout";
 import {BillingAPI} from "./api/BillingAPI";
 import {ActionLogAPI} from "./api/ActionLogAPI";
 import {SubscriptionAPI} from "./api/SubscriptionAPI";
@@ -8,13 +7,13 @@ declare var atlas: any;
 export class RdbsApi {
 
     api: string;
-    accountContext: Observable<any>;
+    accountContext: KnockoutObservable<any>;
 
     private subscriptionsApi: SubscriptionAPI;
     private actionLogApi: ActionLogAPI;
     private billingAPI: BillingAPI;
 
-    constructor(api: string, accountContext: Observable<any>) {
+    constructor(api: string, accountContext: KnockoutObservable<any>) {
         this.api = api;
         this.accountContext = accountContext;
     }
