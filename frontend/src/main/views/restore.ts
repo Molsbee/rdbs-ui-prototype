@@ -12,17 +12,14 @@ export class ViewModel {
 
     private api: string;
     private accountContext: KnockoutObservable<any>;
-
     private subscriptionApi: SubscriptionAPI;
     private backupApi: BackupAPI;
 
     toSubscription: KnockoutObservable<Subscription> = ko.observable<Subscription>();
     fromSubscription: KnockoutObservable<Subscription> = ko.observable<Subscription>();
     fromSubscriptions: KnockoutObservableArray<Subscription> = ko.observableArray<Subscription>();
-
     fromBackup: KnockoutObservable<Backup> = ko.observable<Backup>();
     restoreType: KnockoutObservable<String> = ko.observable("full");
-
     selectedDateTime: KnockoutObservable<Moment> = ko.observable(moment().utc().seconds(59).milliseconds(999));
     restorePoints: KnockoutObservableArray<RestorePoint> = ko.observableArray<RestorePoint>();
     errors: KnockoutValidationErrors;

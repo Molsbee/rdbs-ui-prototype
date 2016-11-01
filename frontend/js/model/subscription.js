@@ -4,6 +4,9 @@ define(["require", "exports", "./backup"], function (require, exports, backup_1)
         function Subscription(data) {
             var _this = this;
             this.backups = [];
+            this.backupIsEmpty = function () {
+                return (_this.backups && _this.backups.length != 0) ? false : true;
+            };
             this.id = data.id;
             this.accountAlias = data.accountAlias;
             this.externalId = data.externalId;
@@ -20,10 +23,11 @@ define(["require", "exports", "./backup"], function (require, exports, backup_1)
             this.memory = server.memory;
             this.storage = server.storage;
             this.activeServerRole = getActiveServerRole(data.servers);
-            data.backups.forEach(function (b) {
-                _this.backups.push(new backup_1.Backup(b));
-            });
-            this.backupIsEmpty = (data.backups.length == 0) ? true : false;
+            if (data.backups) {
+                data.backups.forEach(function (b) {
+                    _this.backups.push(new backup_1.Backup(b));
+                });
+            }
             this.restartRequired = data.restartRequired;
         }
         // TODO: Complete

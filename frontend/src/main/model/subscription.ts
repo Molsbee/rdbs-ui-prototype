@@ -22,7 +22,6 @@ export class Subscription {
     memory: number;
     storage: number;
     activeServerRole: string;
-    backupIsEmpty: boolean;
 
     constructor(data: SubscriptionResponse) {
         this.id = data.id;
@@ -43,13 +42,18 @@ export class Subscription {
         this.storage = server.storage;
         this.activeServerRole = getActiveServerRole(data.servers);
 
-        data.backups.forEach((b) => {
-            this.backups.push(new Backup(b));
-        });
-        
-        this.backupIsEmpty = (data.backups.length == 0) ? true : false;
+        if (data.backups) {
+            data.backups.forEach((b) => {
+                this.backups.push(new Backup(b));
+            });
+        }
+
         this.restartRequired = data.restartRequired;
     }
+
+    backupIsEmpty = (): boolean => {
+        return (this.backups && this.backups.length != 0) ? false : true;
+    };
 
     // TODO: Complete
     update() {
