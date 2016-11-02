@@ -3,7 +3,7 @@ import {ActionLog, ActionLogAPI} from "../api/ActionLogAPI";
 
 export class History {
 
-    actionLogApi: ActionLogAPI;
+    private actionLogApi: ActionLogAPI;
 
     actions: KnockoutObservableArray<ActionLog> = ko.observableArray<ActionLog>();
     sortedActionsGroupedByDate: KnockoutComputed<any> = ko.computed(() => {
@@ -35,6 +35,7 @@ export class History {
     });
 
     constructor(api: string, accountContext: KnockoutObservable<any>) {
+        console.log("Constructing History Class");
         this.actionLogApi = new ActionLogAPI(api, accountContext);
     }
 

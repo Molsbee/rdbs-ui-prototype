@@ -9,8 +9,8 @@ declare var atlas: any;
 
 export class ViewModel {
 
-    dbaasApi: string;
-    rdbsApi: RdbsApi;
+    private dbaasApi: string;
+    private rdbsApi: RdbsApi;
 
     accountContext: KnockoutObservable<any>;
 

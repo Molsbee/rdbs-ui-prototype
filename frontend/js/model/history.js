@@ -31,6 +31,7 @@ define(["require", "exports", "knockout", "../api/ActionLogAPI"], function (requ
                     _this.actions(actionLogs);
                 });
             };
+            console.log("Constructing History Class");
             this.actionLogApi = new ActionLogAPI_1.ActionLogAPI(api, accountContext);
         }
         return History;

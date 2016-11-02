@@ -40,5 +40,5 @@ func SubscriptionCreate(w http.ResponseWriter, r *http.Request) {
 		RdbsApi: "https://api-dv.rdbs.ctl.io/v1",
 	}
 
-	log.Println(t.ExecuteTemplate(w, "create.html", data))
+	t.ExecuteTemplate(w, "create.html", data)
 }
