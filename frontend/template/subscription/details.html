@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en" class="cyclops">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Details | Relational DB</title>
+
+    <link href="https://assets.ctl.io/cyclops/1.6.1/css/cyclops.min.css" rel="stylesheet" type="text/css">
+    <link href="https://assets.ctl.io/atlas/2.0.0-beta.4/css/atlas.min.css" rel="stylesheet" type="text/css">
+    <link href="/css/site.css" rel="stylesheet" type="text/css">
+
+    <!--[if lt IE 9]>
+    <script src="/external/html5shiv-3.7.2.min.js"></script>
+    <script src="/external/respond-1.4.2.min.js"></script>
+    <![endif]-->
+
+    <style>
+        .disabled {
+            pointer-events: none;
+            opacity: 0.4;
+        }
+    </style>
+</head>
+<body id="relational-db">
+    <account-switcher></account-switcher>
+    <brand-bar></brand-bar>
+    <main-nav></main-nav>
+    <main>
+        <div id="mainContent">
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="content-header">
+                            <ol class="breadcrumb">
+                                <li>
+                                    <a href="<c:url value="/"/>">Databases</a>
+                                </li>
+                            </ol>
+                            <h1><span data-bind="text: subscription().externalId"></span></h1>
+                        </div>
+
+                        <div data-bind="visible: subscription().restartRequired" style="display:none">
+                            <div class="alert alert-warning">
+                                <div class="alert-icon">
+                                    <svg class="cyclops-icon"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#icon-exclamation-triangle"></use></svg>
+                                </div>
+                                <h3>Restart Required</h3>
+                                <p>A configuration change has been made to this database. In order for the changes to take effect, this database needs to be restarted.</p>
+                                <p>
+                                    <button class="btn btn-primary" type="button" data-bind="click: actionToolbar.restart">
+                                        <svg class="cyclops-icon">
+                                            <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#icon-refresh"></use>
+                                        </svg>restart this database
+                                    </button>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="row billing-summary">
+                            <div class="col-sm-4 col-xs-6">
+                                <div class="heading">MONTH ESTIMATE</div>
+                                <div class="currency" data-bind="text: billingModel.monthlyEstimate">...</div>
+                            </div>
+                            <div class="col-sm-4 col-xs-6">
+                                <div class="heading">CURRENT HOUR</div>
+                                <div class="currency" data-bind="text: billingModel.currentHour">...</div>
+                            </div>
+                            <div class="col-sm-4 col-xs-6">
+                                <div class="heading">MONTH TO DATE</div>
+                                <div class="currency" data-bind="text: billingModel.monthToDate">...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BEGIN: Action Toolbar -->
+            <div class="action-area">
+                <div class="container">
+                    <ol class="action-toolbar-left">
+                        <%--<li><a href="#" class="disabled"><svg class="cyclops-icon"><use xlink:href='#icon-play' /></svg> start</a></li>--%>
+                        <%--<li><a href="#"><svg class="cyclops-icon"><use xlink:href='#icon-stop' /></svg> stop</a></li>--%>
+                        <%--<li><a href="#"><svg class="cyclops-icon"><use xlink:href='#icon-settings' /></svg> settings</a></li>--%>
+                        <%--<li><a href="#"><svg class="cyclops-icon"><use xlink:href='#icon-backup' /></svg> backup</a></li>--%>
+                        <!--ko if: subscription().isReplicated -->
+                        <li data-bind="attr: { class: formState().state }">
+                            <a href="#" data-bind="click: actionToolbar.failover, widget: 'actionToolbarConfirm'">
+                                <svg class="cyclops-icon"><use xlink:href='#icon-database'/></svg>
+                                <span data-bind="text: actionToolbar.failoverText"></span>
+                            </a>
+                        </li>
+                        <!-- /ko -->
+                        <!-- ko if: subscription().engine == 'MySQL' -->
+                        <li data-bind="attr: { class: formState().state }">
+                            <a href="#" data-bind="click: actionToolbar.restart, widget: 'actionToolbarConfirm'">
+                                <svg class="cyclops-icon">
+                                    <use xlink:href="#icon-refresh"/>
+                                </svg>
+                                <span data-bind="text: actionToolbar.restartText"></span>
+                            </a>
+                        </li>
+                        <!-- /ko -->
+                        <li data-bind="attr: { class: formState().state }">
+                            <a href="#" data-bind="click: actionToolbar.backup,
+                                       widget: {
+                                          name: 'actionToolbarConfirm',
+                                          options: {
+                                            messageHtml: 'Create an unscheduled backup now?',
+                                          }
+                                        }">
+                                <svg class="cyclops-icon"><use xlink:href='#icon-backup'/></svg> <span data-bind="text: actionToolbar.backupText"></span>
+                            </a>
+                        </li>
+                        <!-- ko if: subscription().engine == 'MySQL' -->
+                        <li data-bind="attr: { class: formState().state }">
+                            <a href="<c:url value='/${accountAlias}/subscription/${subscriptionId}/restore'/>">
+                                <svg class="cyclops-icon"><use xlink:href='#icon-restore'/></svg> restore
+                            </a>
+                        </li>
+                        <!-- /ko -->
+                    </ol>
+                    <ol class="action-toolbar-right">
+                        <li data-bind="attr: { class: deleteState().state }">
+                            <a href="#" id="deleteButton"
+                               data-bind="click: actionToolbar.deleteSubscription,
+                                       widget: {
+                                          name: 'actionToolbarConfirm',
+                                          options: {
+                                            classes: 'action-toolbar-confirm-danger',
+                                            messageHtml: 'Are you sure? Have you made a final backup?',
+                                            yesHtml: '<svg class=&quot;cyclops-icon&quot;><use xmlns:xlink=&quot;http://www.w3.org/1999/xlink&quot; xlink:href=&quot;#icon-trash&quot;></use></svg> Delete'
+                                          }
+                                        }">
+                                <svg class="cyclops-icon"><use xlink:href='#icon-trash' /></svg>
+                                <span data-bind="text: actionToolbar.deleteText"></span>
+                            </a>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- BEGIN: EDIT ALERTS -->
+            <div class="hide slide-well" data-bind="fadeSlide: editAlertsForm.editAlerts()">
+                <div class="container">
+                    <div class="col-sm-12">
+                        <form class="form-horizontal" data-bind="validationOptions: { insertMessages: false, allowHtmlMessages: true }">
+                            <fieldset>
+                                <legend>
+                                    <span data-bind="text: editAlertsForm.title"></span>
+                                    <button type="button" class="close" aria-label="Close" data-bind="click: editAlertsForm.cancel">
+                                            <span aria-hidden="true">
+                                                <svg class="cyclops-icon">
+                                                    <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#icon-times"></use>
+                                                </svg>
+                                            </span>
+                                    </button>
+                                </legend>
+                                <!-- ko foreach: editAlertsForm.destinations -->
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label" data-bind="text: destinationTitle"></label>
+                                    <div class="col-sm-6">
+                                        <!-- ko if: newDestination -->
+                                        <select class="form-control w20"
+                                                data-bind="disable: $parent.editAlertsForm.notificationLock,
+                                                            options: $parent.editAlertsForm.destinationTypes,
+                                                            optionsText: 'Type',
+                                                            optionsValue: 'Type',
+                                                            value: destinationType"></select>
+                                        <input class="form-control w70" value=""
+                                               data-bind="disable: $parent.editAlertsForm.notificationLock,
+                                                            value: recipient,
+                                                            validationElement: recipient">
+                                        <!-- /ko -->
+                                        <!-- ko ifnot: newDestination -->
+                                        <input class="form-control w90" value=""
+                                               data-bind="disable: $parent.editAlertsForm.notificationLock,
+                                                            value: recipient,
+                                                            validationElement: recipient">
+                                        <!-- /ko -->
+                                        <button class="btn btn-link"
+                                                data-bind="disable: $parent.editAlertsForm.notificationLock,
+                                                            click: $parent.editAlertsForm.removeDestination">
+                                            <svg class="cyclops-icon">
+                                                <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#icon-close"></use>
+                                            </svg>
+                                        </button>
+                                        <p data-bind="validationMsg: recipient"></p>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox" value=""
+                                                       data-bind="disable: $parent.editAlertsForm.notificationLock,
+                                                           checked: allCheckbox,
+                                                           click: toggleAllCheckbox">
+                                                <strong>All:</strong> An alert will be sent when any condition listed below is met.
+                                            </label>
+                                        </div>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox" value="CPU_UTILIZATION"
+                                                       data-bind="disable: $parent.editAlertsForm.notificationLock,
+                                                           checked: alerts,
+                                                           click: onAlertModified">
+                                                <strong>CPU:</strong> An alert will be sent at 80% CPU usage. A second alert will
+                                                be sent when CPU usage reaches 90%.
+                                            </label>
+                                        </div>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox" value="STORAGE_UTILIZATION"
+                                                       data-bind="disable: $parent.editAlertsForm.notificationLock,
+                                                           checked: alerts,
+                                                           click: onAlertModified">
+                                                <strong>Storage:</strong> An alert will be sent at 80% Storage usage. A second alert
+                                                will be sent when Storage usage reaches 90%.
+                                            </label>
+                                        </div>
+                                        <p data-bind="validationMsg: alerts"></p>
+                                    </div>
+                                </div>
+                                <!-- /ko -->
+                            </fieldset>
+                            <div class="form-group">
+                                <div class="col-sm-9 col-sm-offset-3">
+                                    <button class="btn btn-mini btn-default" data-bind="disable: editAlertsForm.notificationLock, click: editAlertsForm.addDestination">add notification</button>
+                                </div>
+                            </div>
+                            <div class="form-group form-submit">
+                                <div class="col-sm-offset-3 col-sm-9">
+                                    <button type="button" class="btn btn-primary"
+                                            data-bind="disable: editAlertsForm.notificationLock,
+                                                            click: editAlertsForm.isValid() ? editAlertsForm.updateDestinations : false;">
+                                        save</button>
+                                    <button type="button" class="btn btn-link"
+                                            data-bind="disable: editAlertsForm.notificationLock,
+                                                            click: editAlertsForm.cancel">
+                                        cancel</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BEGIN: EDIT Resources -->
+            <div class="hide slide-well" data-bind="fadeSlide: editResourcesForm.editResources()">
+                <div class="row">
+                    <div class="container">
+                        <div id="priceEstimateContainer">
+                            <div id="priceEstimate">
+                                <h5 class="content-header">COST ESTIMATE AS CONFIGURED</h5>
+                                <div class="cost-value" data-bind="text: editResourcesForm.pricingEstimator.pricingEstimate().monthlyCost"></div>
+                                <div class="cost-interval">PER MONTH</div>
+                                <div class="cost-value" data-bind="text: editResourcesForm.pricingEstimator.pricingEstimate().hourlyCost"></div>
+                                <div class="cost-interval">PER HOUR</div>
+                            </div>
+                            <div id="priceBreakdown">
+                                <div class="lineItem" data-bind="visible: subscription().isReplicated">
+                                    <div class="line-item-display">Replication</div>
+                                </div>
+                                <div class="lineItem">
+                                    <div class="line-item-display">
+                                        <span data-bind="text: subscription().cpu"></span> CPUs
+                                    </div>
+                                </div>
+                                <div class="lineItem">
+                                    <div class="line-item-display">
+                                        <span data-bind="text: subscription().memory"></span>GB Memory
+                                    </div>
+                                </div>
+                                <div class="lineItem">
+                                    <div class="line-item-display">
+                                        <span data-bind="text: subscription().storage"></span>GB Storage
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="editResourceContainer" class="col-sm-9">
+                            <form class="form-horizontal">
+                                <fieldset>
+                                    <legend>Edit Resources
+                                        <button type="button" class="close" aria-label="Close" data-bind="click: editResourcesForm.cancel">
+                                            <span aria-hidden="true">
+                                                <svg class="cyclops-icon">
+                                                    <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#icon-times"></use>
+                                                </svg>
+                                            </span>
+                                        </button>
+                                    </legend>
+                                    <div class="form-group">
+                                        <label class="col-sm-3 control-label">CPU</label>
+                                        <div class="col-sm-6">
+                                            <slider params="value: subscription().cpu, min: 1, max: 16, disabled: !formState().enabled"/>
+                                            <!-- CPU -->
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-3 control-label">Memory (GB)</label>
+                                        <div class="col-sm-6">
+                                            <slider params="value: subscription().memory, min: 1, max: 128, disabled: !formState().enabled"/>
+                                            <!-- Memory -->
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-3 control-label">Storage (GB)</label>
+                                        <!-- TODO: Adjust max value for MSSQL -->
+                                        <div class="col-sm-6">
+                                            <slider params="value: subscription().storage, min: subscription().storage.committedValue, max: 664, disabled: !formState().enabled"/>
+                                            <!-- Disk -->
+                                        </div>
+                                    </div>
+                                </fieldset>
+
+                                <div class="form-group form-submit">
+                                    <div class="col-sm-offset-3 col-sm-6">
+                                        <div class="alert alert-warning" role="alert" data-bind="visible: editResourcesForm.isDirty()">
+                                            <div class="alert-icon ">
+                                                <svg class="cyclops-icon"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#icon-exclamation-circle"></use></svg>
+                                            </div>
+                                            <h4>Restart Required</h4>
+                                            <p>A restart of the database will be required for changes to take effect.</p>
+                                        </div>
+                                        <button class="btn btn-primary" data-bind="enable: formState().enabled, click: editResourcesForm.save">save</button>
+                                        <button type="button" class="btn btn-link" data-bind="enable: formState().enabled, click: editResourcesForm.cancel">cancel</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BEGIN: Page Body -->
+            <div class="primary">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-2 col-md-12">
+                            <div class="card resources">
+                                <div class="card-block text-center">
+                                    <p><span class="h2" data-bind="text: subscription().cpu.committedValue"></span><br>cpu</p>
+                                    <p><span class="h2" data-bind="text: subscription().memory.committedValue"></span><br>GB of memory</p>
+                                    <p><span class="h2" data-bind="text: subscription().storage.committedValue"></span><br>GB of storage</p>
+                                    <!-- ko if: subscription().engine == 'MySQL' -->
+                                    <button type="button" class="btn btn-outline btn-mini btn-block" data-bind="click: editResourcesForm.toggleResources, enable: formState().enabled">resources</button>
+                                    <!-- /ko -->
+                                    <button type="button" class="btn btn-outline btn-mini btn-block" data-bind="click: editAlertsForm.toggleForm">alerts</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-10 col-md-12">
+                            <div data-bind="with: jobQueue, visible: jobQueue.isVisible">
+                                <%@ include file="job-queue.jsp" %>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <h5 class="content-header">INFO</h5>
+                                    <div class="row">
+                                        <div class="col-sm-6">
+                                            <ul class="list-info">
+                                                <li>
+                                                    <div class="info-label">Status</div>
+                                                    <div class="info-value" data-bind="text: subscription().status"></div>
+                                                </li>
+                                                <li>
+                                                    <div class="info-label">Connection</div>
+                                                    <div class="info-value"><span data-bind="text: subscription().host"></span>:<span data-bind="text: subscription().port"></span></div>
+                                                </li>
+                                                <li>
+                                                    <div class="info-label">Location</div>
+                                                    <div class="info-value"><span data-bind="text: subscription().location"></span></div>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <ul class="list-info">
+                                                <li>
+                                                    <div class="info-label">Engine</div>
+                                                    <div class="info-value">
+                                                        <span class="tag tag-default" data-bind="text: subscription().engine"></span>
+                                                    </div>
+                                                </li>
+                                                <!-- ko if: subscription().isReplicated -->
+                                                <li>
+                                                    <div class="info-label">Active Instance</div>
+                                                    <div class="info-value">
+                                                        <span data-bind="text: subscription().activeServerRole"></span>
+                                                    </div>
+                                                </li>
+                                                <!-- /ko -->
+                                                <li>
+                                                    <div class="info-label">Certificate</div>
+                                                    <div class="info-value"><button
+                                                            onclick="window.location.href='${dbaasApi}/${accountAlias}/subscriptions/${subscriptionId}/certificate'"
+                                                            class="btn btn-inverse btn-mini">download</button></div>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row m-t-lg">
+                                <div class="col-sm-12">
+                                    <ul role="navigation" class="nav nav-tabs">
+                                        <li data-bind="attr: { class: activeTab() == 'backups' ? 'active' : '' }">
+                                            <a href="#" data-bind="click: function(data, event) { activeTab('backups') }">Backups</a>
+                                        </li>
+                                        <!-- ko if: subscription().engine == 'MySQL' -->
+                                        <li data-bind="attr: { class: activeTab() == 'configuration' ? 'active' : '' }">
+                                            <a href="#" data-bind="click: function(data, event) { activeTab('configuration') }">Configuration</a>
+                                        </li>
+                                        <!-- /ko -->
+                                    </ul>
+
+                                    <div data-bind="visible: activeTab() == 'backups', with: editBackupPolicyForm" style="display:none">
+                                        <%@ include file="backups-pane.jsp" %>
+                                    </div>
+
+                                    <!-- Responsible for displaying configuration list tab and data -->
+                                    <!-- ko if: subscription().engine == 'MySQL' -->
+                                    <div class="col-sm-12" data-bind="visible: activeTab() == 'configuration'" style="display:none">
+                                        <div class="info-value">
+                                            <p>Optimize the performance of the database by tuning its configuration parameter values.</p>
+                                            <p>
+                                                Configuration Parameter Profile:
+                                                <strong>
+                                                    <a href="<c:url value='/${accountAlias}/configurationprofiles/${configurationProfile.id}'/>">
+                                                        <span data-bind="text: subscription().configurationProfile.name"></span>
+                                                    </a>
+                                                </strong>
+                                                <span>
+                                                            (<a data-bind="attr: { class: formState().state }" href="<c:url value='/${accountAlias}/subscription/${subscriptionId}/configurationprofile'/>">change</a>)
+                                                        </span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <!-- /ko -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container" id="activityHistoryRoot">
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="activity-history"
+                         data-bind="template: { name: 'recentActivityTemplate', data: sortedActionsGroupedByDate }"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+<%@include file="/WEB-INF/views/dependencies.jsp" %>
+<script src="<c:url value="/js/model/backup.js"/>"></script>
+<script src="<c:url value="/js/model/billing.js"/>"></script>
+<script src="<c:url value="/js/model/destination.js"/>"></script>
+<script src="<c:url value="/js/model/pricingEstimator.js"/>"></script>
+<script src="<c:url value="/js/model/subscription.js"/>"></script>
+<script src="<c:url value="/js/model/history.js"/>"></script>
+<script src="<c:url value="/js/model/job.js"/>"></script>
+<script type="application/javascript">
+var EditAlertsForm = function() {
+    var self = this;
+
+    self.destinations = ko.observableArray();
+    self.destinationsInitial = [];
+    self.title = ko.computed(function () { return self.destinations().length == 0 ? "Add Alerts" : "Edit Alerts"; });
+    self.destinationTypes = ko.observableArray([{Type: "EMAIL"}]);
+
+    self.getDestinations = function() {
+        atlas.ajax({
+            method: 'GET',
+            url: "${dbaasApi}/${accountAlias}/subscriptions/${subscriptionId}/notifications",
+            success: function(destinations) {
+                var destinationArray = [];
+                ko.utils.arrayForEach(destinations, function(destination) {
+                    destinationArray.push(new Destination(destination));
+                });
+                self.destinations(destinationArray);
+                self.destinationsInitial = destinationArray.slice();
+            }
+        });
+    };
+    self.getDestinations();
+
+    self.editAlerts = ko.observable(false);
+    self.toggleForm = function() {
+        self.editAlerts(!self.editAlerts());
+    };
+
+    self.addDestination = function() {
+        self.destinations.push(new Destination());
+    };
+
+    self.deleteDestinations = ko.observableArray();
+    self.removeDestination = function() {
+        self.destinations.remove(this);
+        if (this.id()) {
+            self.deleteDestinations.push(this);
+        }
+    };
+
+    self.isDirty = function() {
+        var result = self.deleteDestinations().length > 0;
+        $.each(self.destinations(), function(index, dest) {
+            result = result || dest.isDirty();
+        });
+        return result;
+    };
+
+    self.isValid = function() {
+        var result = true;
+        $.each(self.destinations(), function(index, dest) {
+            result = result && dest.isValid();
+        });
+        return result;
+    };
+
+    self.notificationLock = ko.observable(false);
+    self.updateDestinations = function() {
+        if(!self.isDirty()) {
+            self.editAlerts(false);
+        } else if(self.isValid()) {
+            self.notificationLock(true);
+
+            var destinationsCount = self.destinations().length + self.deleteDestinations().length;
+            var destinationsProcessed = 0;
+
+            // Perform Delete Requests
+            ko.utils.arrayForEach(self.deleteDestinations(), function(destination) {
+                atlas.ajax({
+                    method: 'DELETE',
+                    url: "${dbaasApi}/${accountAlias}/subscriptions/${subscriptionId}/notifications/" + destination.id(),
+                    success: function() {
+                        self.deleteDestinations.remove(destination);
+                    },
+                    complete: function() {
+                        if(++destinationsProcessed == destinationsCount) {
+                            self.editAlerts(false);
+                            self.notificationLock(false);
+                        }
+                    }
+                });
+            });
+
+            // Perform Update/Create Requests
+            ko.utils.arrayForEach(self.destinations(), function(destination) {
+                if(!destination.isDirty()) {
+                    if(++destinationsProcessed == destinationsCount) {
+                        self.editAlerts(false);
+                        self.notificationLock(false);
+                    }
+                } else {
+                    var request = {
+                        destinationType: destination.destinationType().toUpperCase(),
+                        recipient: destination.recipient(),
+                        notificationTypes: destination.alerts()
+                    };
+
+                    var baseUrl = "${dbaasApi}/${accountAlias}/subscriptions/${subscriptionId}/notifications";
+                    var endpoint = destination.id() ?  baseUrl + "/" + destination.id() : baseUrl;
+                    atlas.ajax({
+                        method: destination.id() ? 'PUT' : 'POST',
+                        url: endpoint,
+                        data: JSON.stringify(request),
+                        dataType: 'json',
+                        contentType: 'application/json',
+                        success: function(data) {
+                            self.destinations.remove(destination);
+                            self.destinations.push(new Destination(data));
+                        },
+                        error: function() {
+                            // on error, revert the destination to its original value
+                            destination.reset();
+                        },
+                        complete: function() {
+                            if(++destinationsProcessed == destinationsCount) {
+                                self.editAlerts(false);
+                                self.notificationLock(false);
+                            }
+                        }
+                    });
+                }
+            });
+        }
+    };
+
+    self.cancel = function () {
+        self.editAlerts(false);
+        self.destinations(self.destinationsInitial.slice());
+        $.each(self.destinations(), function(index, dest){
+            dest.reset();
+        });
+        self.deleteDestinations.removeAll();
+    };
+
+    return self;
+};
+
+var EditResourcesForm = function(subscription) {
+    var self = this;
+
+    self.pricingEstimator = new PricingEstimator('${dbaasApi}', subscription().cpu, subscription().memory, subscription().storage);
+    subscription.subscribe(function(subscription) {
+        if (subscription.engine() && subscription.location()) {
+            self.pricingEstimator.loadPricing(subscription.engine(), subscription.isReplicated(), subscription.location());
+        }
+    });
+
+    self.resourceChangeAlert = ko.observable(false);
+    self.toggleResourceChangeAlert = function() {
+        self.resourceChangeAlert(true);
+    };
+
+    self.editResources = ko.observable(false);
+    self.toggleResources = function() {
+        self.editResources(!self.editResources());
+    };
+
+    self.isDirty = ko.pureComputed( function() {
+        return subscription().cpu.committedValue() != subscription().cpu()
+                || subscription().memory.committedValue() != subscription().memory()
+                || subscription().storage.committedValue() != subscription().storage();
+    });
+
+    self.reconfiguring = ko.observable(false);
+    self.save = function() {
+        if(!self.isDirty()) {
+            self.editResources(false);
+        } else {
+            self.reconfiguring(true);
+            var request = { machineConfig: {
+                cpu: subscription().cpu(),
+                memory: subscription().memory(),
+                storage: subscription().storage()
+            }};
+            atlas.ajax({
+                method: 'PATCH',
+                url: "${dbaasApi}/${accountAlias}/subscriptions/${subscriptionId}",
+                data: JSON.stringify(request),
+                dataType: 'json',
+                contentType: 'application/json',
+                success: function(data) {
+                    subscription().cpu.commit();
+                    subscription().memory.commit();
+                    subscription().storage.commit();
+                    subscription().status(data.status);
+                    self.resourceChangeAlert(false);
+                    self.reconfiguring(false);
+                    self.editResources(false);
+                },
+                error: function(data) {
+                    if (data.getAllResponseHeaders()) {
+                        alert("Failed to Scale Subscription");
+                        self.reconfiguring(false);
+                    }
+                }
+            });
+        }
+    };
+
+    self.cancel = function() {
+        subscription().cpu.reset();
+        subscription().memory.reset();
+        subscription().storage.reset();
+        self.resourceChangeAlert(false);
+        self.editResources(false);
+    };
+
+    return self;
+};
+
+var ActionToolbar = function(parent) {
+    var self = this;
+
+    self.failoverText = ko.observable("failover");
+    self.isFailingOver = ko.observable(false);
+    self.failover = function() {
+        self.failoverText("failover in progress");
+        self.isFailingOver(true);
+        var failoverRequest = {
+            type: "failover"
+        };
+
+        atlas.ajax({
+            method: 'POST',
+            url: "${dbaasApi}/${accountAlias}/subscriptions/${subscriptionId}/operations",
+            contentType: 'application/json',
+            data: JSON.stringify(failoverRequest),
+            dataType: 'json',
+            success: function (data) {
+                parent.subscription().loadData(data);
+            },
+            error: function (data) {
+                if (data.getAllResponseHeaders()) {
+                    alert("Failover Unsuccessful");
+                }
+            },
+            complete: function() {
+                self.failoverText("failover");
+                self.isFailingOver(false);
+            }
+        });
+    };
+
+    self.restartText = ko.observable("restart");
+    self.isRestarting = ko.observable(false);
+    self.restart = function() {
+        self.restartText("restarting");
+        self.isRestarting(true);
+        var restartRequest = {
+            type: "restart"
+        };
+
+        atlas.ajax({
+            method: 'POST',
+            url: "${dbaasApi}/${accountAlias}/subscriptions/${subscriptionId}/operations",
+            contentType: 'application/json',
+            data: JSON.stringify(restartRequest),
+            dataType: 'json',
+            error: function(data) {
+                if (data.getAllResponseHeaders()) {
+                    alert("Restart Unsuccessful");
+                }
+            },
+            success: function() {
+                parent.subscription().restartRequired(false);
+            },
+            complete: function() {
+                self.restartText("restart");
+                self.isRestarting(false);
+            }
+        })
+    }
+
+    self.isBackingUp = ko.observable(false);
+    self.backupText = ko.computed(function() {
+        if (self.isBackingUp() == true || parent.subscription().status() == 'Backing Up') {
+            return "backup in progress";
+        } else {
+            return "backup";
+        }
+    });
+    self.backup = function() {
+        self.isBackingUp(true);
+        parent.subscription().status("Backing Up");
+        atlas.ajax({
+            method: 'POST',
+            url: "${dbaasApi}/${accountAlias}/subscriptions/${subscriptionId}/backups",
+            success: function () {
+                parent.getSubscriptionDetails();
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                alert("Failed to initiate backup (" + errorThrown + ")");
+            },
+            complete: function() {
+                parent.jobQueue.getJobs();
+                self.isBackingUp(false);
+            }
+        });
+    };
+
+    self.deleteText = ko.observable("delete");
+    self.isDeleting = ko.observable(false);
+    self.deleteSubscription = function() {
+        self.isDeleting(true);
+        self.deleteText("deleting");
+        atlas.ajax({
+            method: 'DELETE',
+            url: "${dbaasApi}/${accountAlias}/subscriptions/${subscriptionId}",
+            success: function () {
+                window.location.href = '<c:url value="/"/>';
+            },
+            error: function(data) {
+                if (data.getAllResponseHeaders()) {
+                    alert("Failed to Delete Subscription");
+                    self.deleteText("delete");
+                    self.isDeleting(false);
+                }
+            }
+        });
+    };
+
+    return self;
+};
+
+var ViewModel = function() {
+    var self = this;
+
+//    self.subscription = ko.observable(new Subscription());
+    self.getSubscriptionDetails = function() {
+        atlas.ajax({
+            url: "${dbaasApi}/${accountAlias}/subscriptions/${subscriptionId}",
+            success: function(data) {
+                self.subscription().loadData(data);
+                self.subscription.valueHasMutated();
+            }
+        });
+    };
+    self.getSubscriptionDetails();
+
+    // Handles Switching Between Tabs
+//    self.activeTab = ko.observable("backups");
+
+    self.editAlertsForm = new EditAlertsForm();
+    self.editResourcesForm = new EditResourcesForm(self.subscription);
+    self.editBackupPolicyForm = new BackupPolicyForm(self.subscription);
+    self.actionToolbar = new ActionToolbar(self);
+    self.jobQueue = new JobQueue("${dbaasApi}", "${accountAlias}", ${subscriptionId});
+
+    self.formState = ko.computed(function() {
+        if (!self.subscription().isActive()
+                || self.editResourcesForm.reconfiguring()
+                || self.actionToolbar.isDeleting()
+                || self.actionToolbar.isFailingOver()
+                || self.actionToolbar.isRestarting()
+                || !self.editBackupPolicyForm.enableSubmit())
+        {
+            return { enabled: false, state: "disabled" };
+        } else {
+            return { enabled: true, state: "enabled" };
+        }
+    });
+
+    self.deleteState = ko.computed(function() {
+        if (self.subscription().instanceType() && self.subscription().instanceType().startsWith("APPFOG")) {
+            self.actionToolbar.deleteText("Delete this instance through Appfog");
+            return { enabled: false, state: "disabled" };
+        } else {
+            return self.formState();
+        }
+    });
+
+    self.billingModel = new BillingModel("${dbaasApi}/${accountAlias}/billing?subscriptionId=${subscriptionId}");
+
+    return self;
+};
+
+$(function() {
+    var promise = atlas.liftoff({
+        env: "prod",
+        mainNavId: "Main.Services.RelationalDatabaseService"
+    });
+
+    promise.done(function(contexts) {
+        var model = new ViewModel();
+        ko.applyBindings(model, document.getElementById("mainContent"));
+        setInterval(model.getSubscriptionDetails, 30000);
+
+        var model = new HistoryModel('${dbaasApi}/${accountAlias}/history?subscriptionId=${subscriptionId}');
+        ko.applyBindings(model, document.getElementById("activityHistoryRoot"));
+
+        contexts.accountContext.subscribe(function(accountContext) {
+            // Redirect to main page if user context switches into another account
+            if (accountContext.accountAlias !== "${accountAlias}") {
+                window.location = "<c:url value="/"/>";
+            }
+        });
+    });
+});
+</script>
+
+<script type="text/html" id="recentActivityTemplate">
+    <h5 class="content-header">RECENT ACTIVITY</h5>
+    <!-- ko foreach: { data: $data } -->
+    <section class="day">
+        <h5 class="content-header" data-bind="text: date"></h5>
+        <ol data-bind="foreach: { data: actions }">
+            <li>
+                <div class="timestamp" data-bind="text: timestamp.format('hh:mm:ss a')"></div>
+                <div class="details">
+                    <div class="subject" data-bind="text: subject"></div>
+                    <div class="body" data-bind="text: body"></div>
+                    <div class="attribution"><span class="createdBy" data-bind="text: attribution"></span></div>
+                </div>
+            </li>
+        </ol>
+    </section>
+    <!-- /ko -->
+</script>
+</body>
+</html>

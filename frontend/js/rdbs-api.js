@@ -1,4 +1,4 @@
-define(["require", "exports", "./api/BillingAPI", "./api/ActionLogAPI", "./api/SubscriptionAPI"], function (require, exports, BillingAPI_1, ActionLogAPI_1, SubscriptionAPI_1) {
+define(["require", "exports", "./api/BillingAPI", "./api/ActionLogAPI", "./api/SubscriptionAPI", "./api/EngineAPI", "./api/ConfigurationProfilesAPI"], function (require, exports, BillingAPI_1, ActionLogAPI_1, SubscriptionAPI_1, EngineAPI_1, ConfigurationProfilesAPI_1) {
     "use strict";
     var RdbsApi = (function () {
         function RdbsApi(api, accountContext) {
@@ -23,6 +23,20 @@ define(["require", "exports", "./api/BillingAPI", "./api/ActionLogAPI", "./api/S
                     _this.billingAPI = new BillingAPI_1.BillingAPI(_this.api, _this.accountContext);
                 }
                 return _this.billingAPI;
+            };
+            this.engine = function () {
+                if (!_this.engineAPI) {
+                    console.log("Creating new instance of engine api");
+                    _this.engineAPI = new EngineAPI_1.EngineAPI(_this.api, _this.accountContext);
+                }
+                return _this.engineAPI;
+            };
+            this.configurationProfile = function () {
+                if (!_this.configurationProfileAPI) {
+                    console.log("Creating new instance of configuration profile api");
+                    _this.configurationProfileAPI = new ConfigurationProfilesAPI_1.ConfigurationProfilesAPI(_this.api, _this.accountContext);
+                }
+                return _this.configurationProfileAPI;
             };
             this.api = api;
             this.accountContext = accountContext;

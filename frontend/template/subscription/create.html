@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en" class="cyclops">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-COMPATIBLE" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Create Database</title>
+
+    <link href="https://assets.ctl.io/cyclops/1.6.1/css/cyclops.min.css" rel="stylesheet" type="text/css">
+    <link href="https://assets.ctl.io/atlas/2.0.0-beta.4/css/atlas.min.css" rel="stylesheet" type="text/css">
+    <link href="/css/site.css" rel="stylesheet" type="text/css">
+
+    <!--[if lt IE 9]>
+    <script src="/external/html5shiv-3.7.2.min.js"></script>
+    <script src="/external/respond-1.4.2.min.js"></script>
+    <![endif]-->
+</head>
+<body style="background-color: #EFEFEF">
+    <account-switcher></account-switcher>
+    <brand-bar></brand-bar>
+    <main-nav></main-nav>
+    <main id="mainContent">
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="content-header">
+                        <ol class="breadcrumb">
+                            <li>
+                                <a href="/">Databases</a>
+                            </li>
+                        </ol>
+                        <h2>Create Database</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            <div class="row">
+                <div id="priceEstimateContainer">
+                    <div id="priceEstimate">
+                        <h5 class="content-header">COST ESTIMATE AS CONFIGURED</h5>
+                        <div class="cost-value" data-bind="text: pricingEstimator.pricingEstimate().monthlyCost"></div>
+                        <div class="cost-interval">PER MONTH</div>
+                        <div class="cost-value" data-bind="text: pricingEstimator.pricingEstimate().hourlyCost"></div>
+                        <div class="cost-interval">PER HOUR</div>
+                    </div>
+                    <div id="priceBreakdown">
+                        <div class="lineItem" data-bind="visible: form.replicationToggle">
+                            <div class="line-item-display">Replication</div>
+                        </div>
+                        <div class="lineItem">
+                            <div class="line-item-display"><span data-bind="text: form.cpu"></span> CPUs</div>
+                        </div>
+                        <div class="lineItem">
+                            <div class="line-item-display"><span data-bind="text: form.memory"></span>GB Memory</div>
+                        </div>
+                        <div class="lineItem">
+                            <div class="line-item-display"><span data-bind="text: form.storage"></span>GB Storage</div>
+                        </div>
+                    </div>
+                </div>
+                <div id="createFomContainer" class="row">
+                    <form id="createDatabase" action="detail.html" class="form-horizontal">
+                        <fieldset data-bind="disable: submitting">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">engine</label>
+                                <div class="col-sm-6">
+                                    <select class="form-control" data-bind="options: engines,
+                                                                            optionsText: 'engine',
+                                                                            optionsValue: 'engine',
+                                                                            value: form.engine,
+                                                                            optionsAfterRender: form.setEngine">
+                                    </select>
+                                </div>
+                            </div>
+                            <!-- ko if: form.engine() == 'MSSQL' -->
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">edition</label>
+                                <div class="col-sm-6">
+                                    <select class="form-control" data-bind="options: editions,
+                                                                            value: form.edition,
+                                                                            optionsAfterRender: form.setEdition">
+                                    </select>
+                                </div>
+                            </div>
+                            <!-- /ko -->
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">location</label>
+                                <div class="col-sm-6">
+                                    <select class="form-control" data-bind="options: datacenters,
+                                                                            optionsText: 'friendlyName',
+                                                                            optionsValue: 'dataCenter',
+                                                                            value: form.dataCenter,
+                                                                            optionsAfterRender: form.setDataCenter">
+                                    </select>
+                                </div>
+                            </div>
+                            <!-- ko if: form.engine() == 'MSSQL' -->
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">network</label>
+                                <div class="col-sm-6">
+                                    <select class="form-control" data-bind="options: networks,
+                                                                            optionsText: 'description',
+                                                                            optionsValue:'id',
+                                                                            optionsCaption: '--- select a network ---',
+                                                                            value: form.network,
+                                                                            optionsAfterRender: form.setNetwork,
+                                                                            validationElement: form.network,
+                                                                            attr: { disabled: networkIsDisabled }">
+                                    </select>
+                                </div>
+                            </div>
+                            <!-- /ko -->
+                            <div class="form-group">
+                                <label for="database_name" class="col-sm-3 control-label" data-bind="text: nameField">name</label>
+                                <div class="col-sm-6">
+                                    <input type="text" class="form-control" id="database_name" data-bind="value: form.databaseName, validationElement: form.databaseName">
+                                    <!-- ko if: form.engine() == 'MSSQL' -->
+                                    <p>If you wish to have a default instance provide the text "default" as your name</p>
+                                    <!-- /ko -->
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="database_username" class="col-sm-3 control-label">username</label>
+                                <div class="col-sm-6">
+                                    <input type="text" class="form-control" id="database_username" data-bind="value: form.username, validationElement: form.username, disable: form.disableUsername">
+                                </div>
+                            </div>
+                            <div class="form-group" data-bind="validationOptions: { insertMessages: false, allowHtmlMessages: true }">
+                                <label for="database_password" class="col-sm-3 control-label">password</label>
+                                <div class="col-sm-6">
+                                    <input type="password" class="form-control" id="database_password" data-bind="value: form.password, validationElement: form.password, widget: 'passwordStrength'">
+                                    <p data-bind="validationMsg: form.password"></p>
+
+                                    <p>The database username and password is not retrievable (we don't store your credentials).
+                                        Please make sure to keep the credential information in a safe place.</p>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="database_password_confirm" class="col-sm-3 control-label">confirm password</label>
+                                <div class="col-sm-6">
+                                    <input type="password" class="form-control" id="database_password_confirm" data-bind="value: form.passwordConfirmation, validationElement: form.passwordConfirmation">
+                                </div>
+                            </div>
+
+                            <h4 class="content-header m-t-lg">Resources</h4>
+
+                            <!-- TODO How to handle free trial -->
+                            <!-- ko if: form.engine() == 'MySQL' -->
+                            <div class="row" data-bind="if: freeTrialCard.available, visible: freeTrialCard.available">
+                                <a href="#" data-bind="click: freeTrialCard.toggle">
+                                    <div class="col-sm-4 col-sm-offset-3">
+                                        <div data-bind="attr: { class: freeTrialCard.class }">
+                                            <h4 class="card-title">Free Trial</h4>
+                                            <h5 class="card-subtitle">30 day free trial of 1 vCPU, 1 GB Ram, and 1 GB Storage</h5>
+                                            <p class="card-text">After 30 days standard pricing will apply.</p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                            <!-- /ko -->
+
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">cpu</label>
+                                <div class="col-sm-6"><slider params="value: form.cpu, min: 1, max: 16, disabled: resourceConstraint"/><!-- CPU --></div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">memory (GB)</label>
+                                <div class="col-sm-6"><slider params="value: form.memory, min: 1, max: memoryMax, disabled: resourceConstraint"/><!-- Memory --></div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">storage (GB)</label>
+                                <div class="col-sm-6"><slider params="value: form.storage, min: 1, max: storageMax, disabled: resourceConstraint"/><!-- Disk --></div>
+                            </div>
+
+                            <h4 class="content-header m-t-lg">Options</h4>
+
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">enable notifications</label>
+                                <div class="col-sm-6">
+                                    <toggle params="value: form.notificationToggle"></toggle>
+                                </div>
+                            </div>
+                            <div class="hide" data-bind="fadeSlide: form.notificationToggle()">
+                                <!-- ko foreach: form.notifications -->
+                                <div class="form-group" data-bind="validationOptions: {insertMessages: false, allowHtmlMessages: true }">
+                                    <label class="col-sm-3 control-label">notifications</label>
+                                    <div class="col-sm-6">
+                                        <select class="form-control w20" data-bind="options: $parent.notificationTypes,
+                                                                                    optionsText: $data,
+                                                                                    value: destinationType">
+                                        </select>
+                                        <input class="form-control w70" placeholder="your@email.com" data-bind="value: location"/>
+                                        <button class="btn btn-link" type="button"  data-bind="click: $parent.removeNotification">
+                                            <svg class="cyclops-icon"><use xlink:href='#icon-close'/></svg>
+                                        </button>
+                                        <p data-bind="validationMsg: location"></p>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox" data-bind="checked: allCheckbox, click: toggleAll">
+                                                <strong>All:</strong> An alert will be sent when any condition listed below is met.
+                                            </label>
+                                        </div>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox" value="CPU_UTILIZATION" data-bind="checked: checkboxes, click: chosenNotifications">
+                                                <strong>CPU:</strong> An alert will be sent at 80% CPU usage. A second alert will be
+                                                sent when CPU usage reaches 90%.
+                                            </label>
+                                        </div>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox" value= "STORAGE_UTILIZATION" data-bind="checked: checkboxes, click: chosenNotifications">
+                                                <strong>Storage:</strong> An alert will be sent at 80% Storage usage. A second alert
+                                                will be sent when Storage usage reaches 90%.
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- /ko -->
+                                <div class="form-group">
+                                    <div class="col-sm-9 col-sm-offset-3">
+                                        <button class="btn btn-mini btn-default" data-bind="click: addNotification">Add Notification</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ko if: form.engine() == 'MySQL' -->
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">replication</label>
+                                <div class="col-sm-6">
+                                    <toggle params="value: form.replicationToggle"/>
+                                    <p>
+                                        Avoid downtime in the case of a failover. This will create a replica of the Primary
+                                        database and will incur additional costs.
+                                    </p>
+                                </div>
+                            </div>
+                            <!-- /ko -->
+
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">customize backup schedule</label>
+                                <div class="col-sm-6">
+                                    <toggle params="value: form.backupToggle"></toggle>
+                                </div>
+                            </div>
+                            <div class="hide" data-bind="fadeSlide: form.backupToggle()">
+                                <form class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="col-sm-3 control-label">Backup Time</label>
+                                        <div class="col-sm-5">
+                                            <select class="form-control w20" data-bind="options: hour,
+                                                                                        value: form.backupHour">
+                                            </select>
+                                            <label id="backupMinutes"class="form-label">:</label>
+                                            <select class="form-control w20" data-bind="options: minute,
+                                                                                        value: form.backupMinute">
+                                            </select>
+                                            <p>Backups are scheduled in UTC</p>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                            <!-- TODO: Backup retention hard set to 7 for MSSQL -->
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">backup retention</label>
+                                <div class="col-sm-6">
+                                    <slider params="value: form.backupRetentionDays, min: 1, max: 35, disabled: (disableBackupRetention || submitting)"><!-- BackupRetention --></slider>
+                                    <p>Select the number of days to keep backups.</p>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-sm-6 col-sm-offset-3 alert alert-info" role="alert">
+                                    Increasing your backup retention period may increase the backup storage consumed by your instance.
+                                    Your Relational DB subscription includes up to 100% of your allocated storage amount in backup storage.
+                                    Backup storage that exceeds the size of your allocated storage will be billed at standard Object Storage rates.
+                                </div>
+                            </div>
+
+                            <!-- ko if: form.engine() == 'MySQL' -->
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">configuration profile</label>
+                                <div class="col-sm-6">
+                                    <select id="inputProfile" class="form-control m-b-xs" data-bind="options: configurationProfiles,
+                                                                                                     optionsText: 'name',
+                                                                                                     value: form.selectedConfigurationProfile,
+                                                                                                     optionsAfterRender: selectDefaultConfigurationProfile">
+                                    </select>
+                                    <a href="#" class="btn btn-default btn-sm" data-bind="click: saveFormState">new profile</a>
+                                </div>
+                            </div>
+                            <!-- /ko -->
+
+                            <!-- ko if: form.engine() == 'MSSQL' -->
+                            <div class="form-group" data-bind="validationOptions: { insertMessages: false, allowHtmlMessages: true }">
+                                <label class="col-sm-3 control-label">user agreement</label>
+                                <div class="col-sm-offset-3">
+                                    <toggle params="value: form.agreement, validationElement: form.agreement"></toggle>
+                                    <p data-bind="validationMsg: form.agreement"></p>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="form-group">
+                                    <div class="col-sm-6 col-sm-offset-3 alert alert-info" role="alert">
+                                        The Relational DB MSSQL Beta program is limited to Web Edition only.  The software may
+                                        be used only to support public and Internet accessible Web pages, Web sites, Web
+                                        applications and Web services. It may not be used to support line of business applications
+                                        (e.g., Customer Relationship Management, Enterprise Resource Management and other
+                                        similar applications).  By provisioning this instance, you agree that the Relational
+                                        DB instance will be used in accordance with these terms.
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- /ko -->
+
+                            <div class="form-group form-submit">
+                                <div class="col-sm-9 col-sm-offset-3">
+                                    <button class="btn btn-primary" data-bind="click: submit">Create Database</button>
+                                    <a href="/" class="btn btn-link">cancel</a>
+                                </div>
+                            </div>
+                        </fieldset>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script src="/external/require.js"></script>
+    <script src="/js/require-config.js"></script>
+    <script type="application/javascript">
+        require(["jquery", "jqueryUI", "knockout", "knockout-validation", "knockout-mapping", "auth0"],
+                function(jquery, jqueryUI, ko, kovalidation, komapping, auth0) {
+                    window.ko = ko;
+                    window.Auth0 = auth0;
+                    require(["cyclops", "atlas"], function(cyclops, atlas) {
+                        window.atlas = atlas;
+                        require(["views/subscription/create"],
+                                function(create) {
+                                    var promise = atlas.liftoff({
+                                        env: "prod",
+                                        mainNavId: "Main.Services.RelationalDatabaseService"
+                                    });
+
+                                    promise.done(function(contexts) {
+                                        var accountContext = contexts.accountContext;
+                                        var viewModel = new create.ViewModel("{{.RdbsApi}}", accountContext);
+                                        ko.applyBindings(viewModel, document.getElementsByTagName("main")[0]);
+
+                                        accountContext.subscribe(function(context) {
+                                            console.log("Switching to new Account Context");
+                                            console.log(context.accountAlias);
+                                            viewModel.updatePage();
+                                        });
+                                    });
+                                });
+                    });
+                });
+    </script>
+</body>
+</html>

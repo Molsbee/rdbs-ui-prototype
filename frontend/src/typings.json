@@ -2,6 +2,7 @@
   "globalDependencies": {
     "jquery": "registry:dt/jquery#1.10.0+20160929162922",
     "knockout": "registry:dt/knockout#0.0.0+20160914182733",
+    "knockout.mapping": "registry:dt/knockout.mapping#2.0.0+20160316155526",
     "knockout.validation": "registry:dt/knockout.validation#0.0.0+20160501154149",
     "moment": "registry:dt/moment#2.11.1+20161010105546"
   }
